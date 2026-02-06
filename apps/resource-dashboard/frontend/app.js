@@ -1,4 +1,4 @@
-const REFRESH_INTERVAL = 3000;
+const REFRESH_INTERVAL = 5000;
 const dashboard = document.getElementById('dashboard');
 const statusDot = document.getElementById('statusDot');
 const statusText = document.getElementById('statusText');
