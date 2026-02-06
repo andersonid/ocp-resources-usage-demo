@@ -281,6 +281,12 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
+.hpa-stat-hint {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  opacity: 0.7;
+}
 
 .hpa-status-bar {
   grid-column: 1 / -1;

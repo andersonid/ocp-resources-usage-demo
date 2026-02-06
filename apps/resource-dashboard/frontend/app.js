@@ -130,6 +130,7 @@ function renderHPACard(ns) {
         <div class="hpa-stat">
           <div class="hpa-stat-value">${h.desiredReplicas}</div>
           <div class="hpa-stat-label">Replicas desejadas</div>
+          <div class="hpa-stat-hint">min: ${h.minReplicas} / max: ${h.maxReplicas}</div>
         </div>
         <div class="hpa-stat">
           <div class="hpa-stat-value">${cpuPct !== null ? cpuPct + '%' : '--'}</div>
