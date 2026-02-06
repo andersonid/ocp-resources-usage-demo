@@ -1,0 +1,13 @@
+{
+  "name": "resource-dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard for visualizing OpenShift resource usage vs requests/limits",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "@kubernetes/client-node": "^1.0.0"
+  }
+}

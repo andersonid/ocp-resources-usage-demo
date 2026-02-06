@@ -1,0 +1,12 @@
+{
+  "name": "stress-app",
+  "version": "1.0.0",
+  "description": "CPU and memory stress application for OpenShift workshop demos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

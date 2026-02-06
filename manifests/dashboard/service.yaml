@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: resource-dashboard
+  namespace: demo-dashboard
+  labels:
+    app: resource-dashboard
+spec:
+  selector:
+    app: resource-dashboard
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP

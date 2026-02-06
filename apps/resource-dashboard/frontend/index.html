@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resource Dashboard - OpenShift Workshop</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <img src="logo.png" alt="Logo" class="logo">
+      <div class="topbar-sep"></div>
+      <div class="topbar-title">
+        <h1>Resource Dashboard</h1>
+        <span class="topbar-subtitle">Workshop OpenShift - Requests, Limits e Autoscaling</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="status-dot" id="statusDot"></span>
+      <span class="status-text" id="statusText">Conectando...</span>
+      <span class="refresh-info" id="refreshInfo">Atualizacao em <strong id="countdown">3</strong>s</span>
+    </div>
+  </header>
+
+  <main class="dashboard" id="dashboard">
+    <div class="loading" id="loading">Carregando dados do cluster...</div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
