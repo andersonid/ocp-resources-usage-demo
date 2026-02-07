@@ -1,11 +1,29 @@
 const express = require('express');
 const os = require('os');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 const POD_NAME = process.env.HOSTNAME || 'desconhecido';
 const NAMESPACE = process.env.NAMESPACE || 'desconhecido';
+
+// Detect memory limit from cgroups (works inside containers)
+function getMemoryLimitMB() {
+  const paths = [
+    '/sys/fs/cgroup/memory.max',            // cgroups v2
+    '/sys/fs/cgroup/memory/memory.limit_in_bytes' // cgroups v1
+  ];
+  for (const p of paths) {
+    try {
+      const val = fs.readFileSync(p, 'utf8').trim();
+      if (val === 'max' || val === '9223372036854771712') return null; // no limit
+      return Math.round(parseInt(val) / (1024 * 1024));
+    } catch (e) { /* next */ }
+  }
+  return null;
+}
+const MEMORY_LIMIT_MB = getMemoryLimitMB();
 
 // Serve static files (logo)
 app.use(express.static(path.join(__dirname)));
@@ -83,6 +101,14 @@ function buildHTML() {
              font-weight: 600; margin-left: 6px; }
     .badge-on { background: #FB8200; color: white; }
     .badge-off { background: #d5f5e3; color: #1e8449; }
+    .mem-bar-container { margin-top: 14px; margin-bottom: 8px; }
+    .mem-bar-label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; margin-bottom: 5px; color: #003556; }
+    .mem-bar-pct { font-weight: 700; }
+    .mem-bar-track { height: 22px; background: #e8eff5; border-radius: 11px; overflow: hidden; position: relative; }
+    .mem-bar-fill { height: 100%; background: linear-gradient(90deg, #27ae60, #2ecc71); border-radius: 11px; transition: width 0.4s ease; min-width: 2%; }
+    .mem-bar-fill.warning { background: linear-gradient(90deg, #f39c12, #e67e22); }
+    .mem-bar-fill.danger { background: linear-gradient(90deg, #e74c3c, #c0392b); animation: pulse-danger 1s ease-in-out infinite; }
+    @keyframes pulse-danger { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
   </style>
 </head>
 <body>
@@ -119,15 +145,24 @@ function buildHTML() {
       <p>Aloca blocos de memoria para demonstrar os limits de memoria.</p>
       <div style="margin-top: 12px;">
         <a class="btn btn-stress" href="/allocate?size=64">+64 MB</a>
-        <a class="btn btn-stress" href="/allocate?size=128">+128 MB</a>
-        <a class="btn btn-stress" href="/allocate?size=256">+256 MB</a>
         <a class="btn btn-release" href="/release">Liberar Tudo</a>
       </div>
+      ${MEMORY_LIMIT_MB ? `
+      <div class="mem-bar-container">
+        <div class="mem-bar-label">
+          <span>Memoria: ${(memUsage.rss / 1024 / 1024).toFixed(0)} Mi / ${MEMORY_LIMIT_MB} Mi limit</span>
+          <span class="mem-bar-pct">${Math.round((memUsage.rss / 1024 / 1024) / MEMORY_LIMIT_MB * 100)}%</span>
+        </div>
+        <div class="mem-bar-track">
+          <div class="mem-bar-fill ${(memUsage.rss / 1024 / 1024) / MEMORY_LIMIT_MB > 0.8 ? 'danger' : (memUsage.rss / 1024 / 1024) / MEMORY_LIMIT_MB > 0.5 ? 'warning' : ''}" style="width: ${Math.min(Math.round((memUsage.rss / 1024 / 1024) / MEMORY_LIMIT_MB * 100), 100)}%"></div>
+        </div>
+      </div>
+      ` : ''}
       <div class="status">
         <span class="label">Blocos alocados:</span> ${memoryBlocks.length}<br>
         <span class="label">Total alocado:</span> ${memAllocatedMB.toFixed(1)} MB<br>
-        <span class="label">RSS:</span> ${(memUsage.rss / 1024 / 1024).toFixed(1)} MB<br>
-        <span class="label">Heap em uso:</span> ${(memUsage.heapUsed / 1024 / 1024).toFixed(1)} MB
+        <span class="label">RSS:</span> ${(memUsage.rss / 1024 / 1024).toFixed(1)} MB${MEMORY_LIMIT_MB ? `<br>
+        <span class="label">Memory Limit:</span> ${MEMORY_LIMIT_MB} MB` : ''}
       </div>
     </div>
 
