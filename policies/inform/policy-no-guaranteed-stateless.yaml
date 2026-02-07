@@ -19,6 +19,9 @@ spec:
         spec:
           remediationAction: inform
           severity: medium
+          customMessage:
+            noncompliant: "VIOLACAO: O Deployment em app-ruim tem requests = limits (QoS Guaranteed), desperdicando capacidade em app stateless. Ajuste para requests < limits no repositorio GitOps."
+            compliant: "OK: Nenhum Deployment stateless com QoS Guaranteed desnecessario."
           namespaceSelector:
             include:
               - app-ruim

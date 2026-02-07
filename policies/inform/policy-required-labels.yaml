@@ -19,6 +19,9 @@ spec:
         spec:
           remediationAction: inform
           severity: medium
+          customMessage:
+            noncompliant: "VIOLACAO: O Deployment em app-bom nao possui os labels obrigatorios app.kubernetes.io/owner e app.kubernetes.io/cost-center. Adicione no repositorio GitOps."
+            compliant: "OK: O Deployment em app-bom possui os labels obrigatorios."
           namespaceSelector:
             include:
               - app-bom
@@ -41,6 +44,9 @@ spec:
         spec:
           remediationAction: inform
           severity: medium
+          customMessage:
+            noncompliant: "VIOLACAO: O Deployment em app-ruim nao possui os labels obrigatorios app.kubernetes.io/owner e app.kubernetes.io/cost-center. Adicione no repositorio GitOps."
+            compliant: "OK: O Deployment em app-ruim possui os labels obrigatorios."
           namespaceSelector:
             include:
               - app-ruim

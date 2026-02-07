@@ -19,6 +19,9 @@ spec:
         spec:
           remediationAction: inform
           severity: high
+          customMessage:
+            noncompliant: "VIOLACAO: O Deployment solicita 2 CPUs em requests, acima do teto permitido de 1 CPU. Ajuste os requests no repositorio GitOps (gitops/app-ruim/deployment.yaml)."
+            compliant: "OK: Todos os Deployments estao dentro do teto de 1 CPU para requests."
           namespaceSelector:
             include:
               - app-bom
