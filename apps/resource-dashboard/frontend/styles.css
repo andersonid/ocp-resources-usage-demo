@@ -390,6 +390,66 @@ body {
   font-size: 0.72rem;
 }
 
+/* === OOMKill Banner === */
+.oomkill-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: #fff;
+  padding: 12px 18px;
+  margin: 0 0 2px 0;
+  font-size: 0.82rem;
+  font-weight: 500;
+  animation: oomkill-pulse 1.5s ease-in-out infinite;
+}
+
+.oomkill-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+@keyframes oomkill-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* === Termination Badge === */
+.termination-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  background: var(--bg-light);
+  color: var(--text-muted);
+}
+
+.termination-badge.oomkill {
+  background: #fadbd8;
+  color: #c0392b;
+}
+
+/* === Restart Warning === */
+tr.restart-warn td {
+  background: #fef9e7 !important;
+}
+
+tr.restart-warn td.restart-warn {
+  color: #c0392b;
+  font-weight: 700;
+}
+
 /* === Responsive === */
 @media (max-width: 1100px) {
   .dashboard {

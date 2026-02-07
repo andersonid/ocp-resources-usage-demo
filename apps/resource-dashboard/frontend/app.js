@@ -33,12 +33,22 @@ function renderNamespacePanel(ns) {
     ? '<span class="ns-badge bad">Anti-pattern</span>'
     : '<span class="ns-badge good">Recomendado</span>';
 
+  // Check for OOMKill events
+  const oomPods = ns.pods.filter(p => p.lastTerminationReason === 'OOMKilled');
+  const oomBanner = oomPods.length > 0
+    ? `<div class="oomkill-banner">
+        <span class="oomkill-icon">!</span>
+        <span><strong>OOMKilled detectado!</strong> ${oomPods.length > 1 ? oomPods.length + ' pods foram' : 'Pod <em>' + oomPods[0].name + '</em> foi'} terminado(s) por exceder o limit de memoria.</span>
+      </div>`
+    : '';
+
   return `
     <div class="ns-panel">
       <div class="ns-header ${type}">
         <div class="ns-name">${ns.namespace} ${badge}</div>
         <div class="ns-subtitle">${label} -- ${ns.podCount} pod(s) em execucao</div>
       </div>
+      ${oomBanner}
 
       ${renderResourceCard(ns)}
       ${renderHPACard(ns)}
@@ -186,17 +196,26 @@ function renderAntiPatterns(ns) {
 function renderPodTable(ns) {
   if (!ns.pods || ns.pods.length === 0) return '';
 
-  const rows = ns.pods.map(p => `
-    <tr>
-      <td class="pod-name" title="${p.name}">${p.name}</td>
-      <td>${p.usage.cpu_millicores}m</td>
-      <td>${p.requests.cpu_millicores}m</td>
-      <td>${p.limits.cpu_millicores}m</td>
-      <td>${p.usage.memory_mib} Mi</td>
-      <td>${p.requests.memory_mib} Mi</td>
-      <td>${p.limits.memory_mib} Mi</td>
-    </tr>
-  `).join('');
+  const rows = ns.pods.map(p => {
+    const restartClass = p.restartCount > 0 ? 'restart-warn' : '';
+    const reasonBadge = p.lastTerminationReason
+      ? `<span class="termination-badge ${p.lastTerminationReason === 'OOMKilled' ? 'oomkill' : ''}">${p.lastTerminationReason}</span>`
+      : '--';
+
+    return `
+      <tr class="${restartClass}">
+        <td class="pod-name" title="${p.name}">${p.name}</td>
+        <td>${p.usage.cpu_millicores}m</td>
+        <td>${p.requests.cpu_millicores}m</td>
+        <td>${p.limits.cpu_millicores}m</td>
+        <td>${p.usage.memory_mib} Mi</td>
+        <td>${p.requests.memory_mib} Mi</td>
+        <td>${p.limits.memory_mib} Mi</td>
+        <td class="${restartClass}">${p.restartCount}</td>
+        <td>${reasonBadge}</td>
+      </tr>
+    `;
+  }).join('');
 
   return `
     <div class="card">
@@ -211,6 +230,8 @@ function renderPodTable(ns) {
             <th>Mem Uso</th>
             <th>Mem Req</th>
             <th>Mem Lim</th>
+            <th>Restarts</th>
+            <th>Motivo</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>

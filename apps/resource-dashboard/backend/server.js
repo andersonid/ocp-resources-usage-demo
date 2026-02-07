@@ -103,10 +103,23 @@ async function getNamespaceData(namespace) {
     const usage = metricsMap[pod.metadata.name] || { cpu_millicores: 0, memory_mib: 0 };
     const ready = pod.status?.conditions?.find(c => c.type === 'Ready');
 
+    // Restart count and last termination reason
+    const containerStatuses = pod.status?.containerStatuses || [];
+    let restartCount = 0;
+    let lastTerminationReason = null;
+    for (const cs of containerStatuses) {
+      restartCount += cs.restartCount || 0;
+      if (cs.lastState?.terminated?.reason) {
+        lastTerminationReason = cs.lastState.terminated.reason;
+      }
+    }
+
     return {
       name: pod.metadata.name,
       status: pod.status?.phase,
       ready: ready?.status === 'True',
+      restartCount,
+      lastTerminationReason,
       requests: { cpu_millicores: Math.round(reqCPU), memory_mib: Math.round(reqMem) },
       limits: { cpu_millicores: Math.round(limCPU), memory_mib: Math.round(limMem) },
       usage: usage
