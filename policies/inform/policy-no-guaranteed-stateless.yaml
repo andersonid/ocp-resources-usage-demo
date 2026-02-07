@@ -1,0 +1,70 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: policy-no-guaranteed-stateless
+  namespace: open-cluster-management-policies
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+spec:
+  remediationAction: inform
+  disabled: false
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: check-guaranteed-qos-app-ruim
+        spec:
+          remediationAction: inform
+          severity: medium
+          namespaceSelector:
+            include:
+              - app-ruim
+          object-templates:
+            - complianceType: mustnothave
+              objectDefinition:
+                apiVersion: apps/v1
+                kind: Deployment
+                metadata:
+                  name: stress-app
+                  namespace: app-ruim
+                spec:
+                  template:
+                    spec:
+                      containers:
+                        - name: stress-app
+                          resources:
+                            requests:
+                              cpu: "2"
+                              memory: 2Gi
+                            limits:
+                              cpu: "2"
+                              memory: 2Gi
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: placement-no-guaranteed-stateless
+  namespace: open-cluster-management-policies
+spec:
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            name: local-cluster
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: binding-no-guaranteed-stateless
+  namespace: open-cluster-management-policies
+placementRef:
+  name: placement-no-guaranteed-stateless
+  apiGroup: cluster.open-cluster-management.io
+  kind: Placement
+subjects:
+  - name: policy-no-guaranteed-stateless
+    apiGroup: policy.open-cluster-management.io
+    kind: Policy
