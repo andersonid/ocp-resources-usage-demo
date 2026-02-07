@@ -12,4 +12,4 @@ EXPOSE 8080
 
 USER 1001
 
-CMD ["node", "server.js"]
+CMD ["node", "--expose-gc", "server.js"]

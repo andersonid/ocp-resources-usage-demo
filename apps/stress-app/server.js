@@ -260,8 +260,12 @@ app.get('/allocate', (req, res) => {
 
 app.get('/release', (req, res) => {
   const count = memoryBlocks.length;
+  memoryBlocks.length = 0;
   memoryBlocks = [];
-  if (global.gc) global.gc();
+  if (global.gc) {
+    global.gc();
+    setTimeout(() => global.gc(), 500);
+  }
   console.log(`[MEM] Liberados ${count} blocos`);
   res.redirect('/');
 });
