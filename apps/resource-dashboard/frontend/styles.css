@@ -261,6 +261,7 @@ body {
 .ns-panel.bad .bar-track { background: #fdf2f1; }
 .ns-panel.good .bar-track { background: #f0faf4; }
 
+
 .bar-fill {
   height: 100%;
   border-radius: 6px;
@@ -287,57 +288,55 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  background: var(--orange);
-  opacity: 0.18;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 4px,
+    rgba(0,0,0,0.06) 4px,
+    rgba(0,0,0,0.06) 8px
+  );
   z-index: 2;
   border-radius: 6px;
 }
 
 /* Themed request bars */
 .ns-panel.bad .bar-fill.request {
-  background: var(--bad-bar-request);
-  opacity: 0.15;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(192,57,43,0.12),
+    rgba(192,57,43,0.12) 4px,
+    rgba(192,57,43,0.30) 4px,
+    rgba(192,57,43,0.30) 8px
+  );
 }
 
 .ns-panel.good .bar-fill.request {
-  background: var(--good-bar-request);
-  opacity: 0.15;
+  background: repeating-linear-gradient(
+    -45deg,
+    rgba(30,132,73,0.12),
+    rgba(30,132,73,0.12) 4px,
+    rgba(30,132,73,0.30) 4px,
+    rgba(30,132,73,0.30) 8px
+  );
 }
 
 .bar-fill.limit {
   position: absolute;
   top: 0;
   left: 0;
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 4px,
-    rgba(0,0,0,0.03) 4px,
-    rgba(0,0,0,0.03) 8px
-  );
+  background: transparent;
+  border-right: 2px dashed rgba(0,0,0,0.15);
   z-index: 1;
   border-radius: 6px;
 }
 
 /* Themed limit bars */
 .ns-panel.bad .bar-fill.limit {
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 4px,
-    rgba(192,57,43,0.05) 4px,
-    rgba(192,57,43,0.05) 8px
-  );
+  border-right-color: rgba(192,57,43,0.3);
 }
 
 .ns-panel.good .bar-fill.limit {
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 4px,
-    rgba(30,132,73,0.05) 4px,
-    rgba(30,132,73,0.05) 8px
-  );
+  border-right-color: rgba(30,132,73,0.3);
 }
 
 .bar-value {
