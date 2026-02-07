@@ -223,7 +223,7 @@ app.get('/', (req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Workload Simulator - VPA Demo</title>
+  <title>Simulador de Carga - VPA Demo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f6f8; color: #333; }
@@ -249,13 +249,19 @@ app.get('/', (req, res) => {
     .bar-fill.cpu { background: linear-gradient(90deg, #3498db, #2980b9); }
     .bar-fill.mem { background: linear-gradient(90deg, #2ecc71, #27ae60); }
     .bar-text { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: .7rem; font-weight: 600; color: #333; }
+    .cmd-card { background: #1e2a35; border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .cmd-label { color: #8fa3b0; font-size: .78rem; font-weight: 600; white-space: nowrap; }
+    .cmd-code { flex: 1; background: #0d1b26; color: #58d68d; font-family: 'SF Mono', 'Cascadia Code', 'Courier New', monospace; font-size: .78rem; padding: 8px 12px; border-radius: 6px; border: 1px solid #2c3e50; overflow-x: auto; white-space: nowrap; }
+    .cmd-copy { background: #1a5276; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-size: .75rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .2s; }
+    .cmd-copy:hover { background: #2980b9; }
+    .cmd-copy.copied { background: #27ae60; }
     .footer { text-align: center; font-size: .75rem; color: #aaa; padding: 16px; }
   </style>
 </head>
 <body>
   <div class="topbar">
     <img src="logo.png" alt="Logo">
-    <h1>Workload Simulator</h1>
+    <h1>Simulador de Carga</h1>
     <span class="badge" id="uptime">--</span>
   </div>
 
@@ -312,6 +318,12 @@ app.get('/', (req, res) => {
     <div class="chart-container">
       <div class="chart-title">Histórico de usuários simulados (últimos 10 min)</div>
       <canvas id="chart"></canvas>
+    </div>
+
+    <div class="cmd-card">
+      <span class="cmd-label">Recomendações do VPA:</span>
+      <code class="cmd-code" id="vpaCmd">oc describe vpa workload-simulator -n vpa-demo | grep -A 20 "Container Recommendations"</code>
+      <button class="cmd-copy" onclick="copyCmd()" id="copyBtn" title="Copiar comando">Copiar</button>
     </div>
   </div>
 
@@ -408,6 +420,16 @@ app.get('/', (req, res) => {
       } catch (e) {
         console.error('Erro ao buscar status:', e);
       }
+    }
+
+    function copyCmd() {
+      const text = document.getElementById('vpaCmd').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copiado!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+      });
     }
 
     refresh();
