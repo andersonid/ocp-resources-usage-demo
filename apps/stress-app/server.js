@@ -63,11 +63,83 @@ function getTheme() {
   };
 }
 
+// --- YAML snippets for info popups ---
+function getYamlSnippets() {
+  const isRuim = NAMESPACE.includes('ruim');
+
+  const resources = isRuim
+    ? `<span class="yaml-comment"># deployment.yaml -- anti-pattern: requests = limits (QoS Guaranteed)</span>
+<span class="yaml-comment"># Recursos superdimensionados, sem espaco para burst</span>
+<span class="yaml-key">resources:</span>
+  <span class="yaml-key">requests:</span>
+    <span class="yaml-key">cpu:</span> <span class="yaml-bad">"2000m"</span>      <span class="yaml-comment"># 2 vCPUs reservados (provavelmente usa &lt;100m)</span>
+    <span class="yaml-key">memory:</span> <span class="yaml-bad">"2Gi"</span>     <span class="yaml-comment"># 2 Gi reservados (provavelmente usa ~60Mi)</span>
+  <span class="yaml-key">limits:</span>
+    <span class="yaml-key">cpu:</span> <span class="yaml-bad">"2000m"</span>      <span class="yaml-comment"># = requests (sem burst permitido)</span>
+    <span class="yaml-key">memory:</span> <span class="yaml-bad">"2Gi"</span>     <span class="yaml-comment"># = requests (QoS Guaranteed desnecessario)</span>`
+    : `<span class="yaml-comment"># deployment.yaml -- recomendado: requests &lt; limits (QoS Burstable)</span>
+<span class="yaml-comment"># Reserva o minimo, permite burst ate o limit</span>
+<span class="yaml-key">resources:</span>
+  <span class="yaml-key">requests:</span>
+    <span class="yaml-key">cpu:</span> <span class="yaml-value">"50m"</span>        <span class="yaml-comment"># Reserva modesta baseada em uso real</span>
+    <span class="yaml-key">memory:</span> <span class="yaml-value">"128Mi"</span>   <span class="yaml-comment"># Suficiente para operacao normal</span>
+  <span class="yaml-key">limits:</span>
+    <span class="yaml-key">cpu:</span> <span class="yaml-value">"200m"</span>       <span class="yaml-comment"># Permite burst ate 4x o request</span>
+    <span class="yaml-key">memory:</span> <span class="yaml-value">"256Mi"</span>   <span class="yaml-comment"># Teto de seguranca (2x request)</span>`;
+
+  const hpa = isRuim
+    ? `<span class="yaml-comment"># hpa.yaml -- com requests superdimensionados, o HPA fica "travado"</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">scaleTargetRef:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-value">stress-app</span>
+  <span class="yaml-key">minReplicas:</span> <span class="yaml-value">1</span>
+  <span class="yaml-key">maxReplicas:</span> <span class="yaml-value">5</span>
+  <span class="yaml-key">metrics:</span>
+  - <span class="yaml-key">type:</span> <span class="yaml-value">Resource</span>
+    <span class="yaml-key">resource:</span>
+      <span class="yaml-key">name:</span> <span class="yaml-value">cpu</span>
+      <span class="yaml-key">target:</span>
+        <span class="yaml-key">type:</span> <span class="yaml-value">Utilization</span>
+        <span class="yaml-key">averageUtilization:</span> <span class="yaml-bad">70</span>  <span class="yaml-comment"># 70% de 2000m = 1400m (nunca atinge)</span>`
+    : `<span class="yaml-comment"># hpa.yaml -- com requests corretos, o HPA reage rapidamente</span>
+<span class="yaml-key">spec:</span>
+  <span class="yaml-key">scaleTargetRef:</span>
+    <span class="yaml-key">name:</span> <span class="yaml-value">stress-app</span>
+  <span class="yaml-key">minReplicas:</span> <span class="yaml-value">1</span>
+  <span class="yaml-key">maxReplicas:</span> <span class="yaml-value">5</span>
+  <span class="yaml-key">metrics:</span>
+  - <span class="yaml-key">type:</span> <span class="yaml-value">Resource</span>
+    <span class="yaml-key">resource:</span>
+      <span class="yaml-key">name:</span> <span class="yaml-value">cpu</span>
+      <span class="yaml-key">target:</span>
+        <span class="yaml-key">type:</span> <span class="yaml-value">Utilization</span>
+        <span class="yaml-key">averageUtilization:</span> <span class="yaml-value">70</span>  <span class="yaml-comment"># 70% de 50m = 35m (escala com pouca carga)</span>`;
+
+  const networking = isRuim
+    ? `<span class="yaml-comment"># deployment.yaml -- anti-pattern: usa Route externa para comunicacao interna</span>
+<span class="yaml-key">env:</span>
+- <span class="yaml-key">name:</span> <span class="yaml-value">PEER_ROUTE</span>
+  <span class="yaml-key">value:</span> <span class="yaml-bad">"stress-app-app-bom.apps.cluster-xxx.opentlc.com"</span>
+<span class="yaml-comment"># Trafego sai do cluster, passa pelo Router/HAProxy,</span>
+<span class="yaml-comment"># resolve DNS externo, negocia TLS, e volta.</span>
+<span class="yaml-comment"># Resultado: ~20ms por chamada, carga no Router.</span>`
+    : `<span class="yaml-comment"># deployment.yaml -- recomendado: usa Service DNS interno</span>
+<span class="yaml-key">env:</span>
+- <span class="yaml-key">name:</span> <span class="yaml-value">PEER_SERVICE</span>
+  <span class="yaml-key">value:</span> <span class="yaml-value">"stress-app.app-ruim.svc.cluster.local:8080"</span>
+<span class="yaml-comment"># Formato: &lt;service&gt;.&lt;namespace&gt;.svc.cluster.local:&lt;port&gt;</span>
+<span class="yaml-comment"># Trafego fica 100% dentro do cluster via SDN.</span>
+<span class="yaml-comment"># Resultado: ~5ms por chamada, sem carga no Router.</span>`;
+
+  return { resources, hpa, networking };
+}
+
 // --- HTML UI ---
 function buildHTML() {
   const memUsage = process.memoryUsage();
   const memAllocatedMB = memoryBlocks.reduce((sum, b) => sum + b.length, 0) / (1024 * 1024);
   const t = getTheme();
+  const yaml = getYamlSnippets();
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -116,6 +188,25 @@ function buildHTML() {
     .mem-bar-fill.warning { background: linear-gradient(90deg, #f39c12, #e67e22); }
     .mem-bar-fill.danger { background: linear-gradient(90deg, #e74c3c, #c0392b); animation: pulse-danger 1s ease-in-out infinite; }
     @keyframes pulse-danger { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+    .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .card-header h2 { margin-bottom: 0; }
+    .info-btn { width: 22px; height: 22px; border-radius: 50%; border: 2px solid ${t.headerBg}; background: transparent;
+                color: ${t.headerBg}; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex;
+                align-items: center; justify-content: center; font-style: italic; font-family: Georgia, serif;
+                transition: all 0.2s; flex-shrink: 0; }
+    .info-btn:hover { background: ${t.headerBg}; color: white; }
+    .yaml-popup { display: none; background: #1e1e2e; color: #cdd6f4; border-radius: 8px; padding: 16px;
+                  margin-top: 10px; font-family: 'Courier New', monospace; font-size: 0.78rem; line-height: 1.6;
+                  overflow-x: auto; position: relative; white-space: pre; }
+    .yaml-popup.visible { display: block; }
+    .yaml-popup .yaml-title { color: #89b4fa; font-weight: 700; margin-bottom: 8px; font-family: 'Segoe UI', sans-serif; font-size: 0.82rem; }
+    .yaml-popup .yaml-comment { color: #6c7086; }
+    .yaml-popup .yaml-key { color: #89b4fa; }
+    .yaml-popup .yaml-value { color: #a6e3a1; }
+    .yaml-popup .yaml-bad { color: #f38ba8; }
+    .yaml-popup .yaml-close { position: absolute; top: 8px; right: 12px; background: none; border: none;
+                               color: #6c7086; cursor: pointer; font-size: 1rem; }
+    .yaml-popup .yaml-close:hover { color: #cdd6f4; }
   </style>
 </head>
 <body>
@@ -134,7 +225,18 @@ function buildHTML() {
     </div>
 
     <div class="card">
-      <h2>Carga de CPU</h2>
+      <div class="card-header">
+        <h2>Carga de CPU</h2>
+        <button class="info-btn" onclick="toggleYaml('yamlResources')" title="Ver YAML">i</button>
+      </div>
+      <div class="yaml-popup" id="yamlResources">
+        <button class="yaml-close" onclick="toggleYaml('yamlResources')">&times;</button>
+        <div class="yaml-title">Configuracao de Resources (deployment.yaml)</div>
+${yaml.resources}
+
+<div class="yaml-title" style="margin-top: 12px;">Configuracao do HPA (hpa.yaml)</div>
+${yaml.hpa}
+      </div>
       <p>Gera consumo de CPU para demonstrar o comportamento do HPA.</p>
       <div style="margin-top: 12px;">
         <a class="btn btn-stress" href="/load?duration=60&intensity=1">60s - Leve</a>
@@ -148,7 +250,15 @@ function buildHTML() {
     </div>
 
     <div class="card">
-      <h2>Alocacao de Memoria</h2>
+      <div class="card-header">
+        <h2>Alocacao de Memoria</h2>
+        <button class="info-btn" onclick="toggleYaml('yamlMemory')" title="Ver YAML">i</button>
+      </div>
+      <div class="yaml-popup" id="yamlMemory">
+        <button class="yaml-close" onclick="toggleYaml('yamlMemory')">&times;</button>
+        <div class="yaml-title">Configuracao de Memory Limits (deployment.yaml)</div>
+${yaml.resources}
+      </div>
       <p>Aloca blocos de memoria para demonstrar os limits de memoria.</p>
       <div style="margin-top: 12px;">
         <a class="btn btn-stress" href="/allocate?size=64">+64 MB</a>
@@ -187,7 +297,15 @@ function buildHTML() {
 
     ${(PEER_ROUTE || PEER_SERVICE) ? `
     <div class="card">
-      <h2>Teste de Comunicacao entre Namespaces</h2>
+      <div class="card-header">
+        <h2>Teste de Comunicacao entre Namespaces</h2>
+        <button class="info-btn" onclick="toggleYaml('yamlNet')" title="Ver YAML">i</button>
+      </div>
+      <div class="yaml-popup" id="yamlNet">
+        <button class="yaml-close" onclick="toggleYaml('yamlNet')">&times;</button>
+        <div class="yaml-title">Configuracao de comunicacao (deployment.yaml)</div>
+${yaml.networking}
+      </div>
       <p>Compara a latencia de chamar outro servico via <strong>Route</strong> (externa) vs <strong>Service</strong> (interna).</p>
 
       <div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
@@ -207,6 +325,11 @@ function buildHTML() {
   </div>
 
   <script>
+    function toggleYaml(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('visible');
+    }
+
     async function runLatencyTest(mode) {
       const el = document.getElementById('netResult');
       el.innerHTML = '<div class="status"><span class="label">Executando 5 chamadas...</span></div>';
