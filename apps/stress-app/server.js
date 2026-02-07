@@ -156,6 +156,7 @@ function buildHTML() {
         <div class="mem-bar-track">
           <div class="mem-bar-fill ${(memUsage.rss / 1024 / 1024) / MEMORY_LIMIT_MB > 0.8 ? 'danger' : (memUsage.rss / 1024 / 1024) / MEMORY_LIMIT_MB > 0.5 ? 'warning' : ''}" style="width: ${Math.min(Math.round((memUsage.rss / 1024 / 1024) / MEMORY_LIMIT_MB * 100), 100)}%"></div>
         </div>
+        <div style="font-size: 0.72rem; color: #888; font-style: italic; margin-top: 4px;">Valor = RSS do processo. O Kubernetes usa working_set (pode ser menor).</div>
       </div>
       ` : ''}
       <div class="status">

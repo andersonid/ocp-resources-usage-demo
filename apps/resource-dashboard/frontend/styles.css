@@ -302,6 +302,13 @@ body {
 .legend-dot.request { background: var(--orange); opacity: 0.4; }
 .legend-dot.limit { background: var(--bg-light); border: 1px dashed var(--text-light); }
 
+.metric-note {
+  font-size: 0.68rem;
+  color: var(--text-light);
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
 /* === HPA Card === */
 .hpa-grid {
   display: grid;

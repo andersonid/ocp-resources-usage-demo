@@ -72,6 +72,7 @@ function renderResourceCard(ns) {
         <div class="legend-item"><div class="legend-dot request"></div> Requests</div>
         <div class="legend-item"><div class="legend-dot limit"></div> Limits</div>
       </div>
+      <div class="metric-note">Uso real = working_set (Kubernetes Metrics API). Pode diferir do RSS reportado pelo processo.</div>
 
       <div class="bar-group">
         <div class="bar-label">
