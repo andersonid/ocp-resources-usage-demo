@@ -3,10 +3,17 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 
+const http = require('http');
+const https = require('https');
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 const POD_NAME = process.env.HOSTNAME || 'desconhecido';
 const NAMESPACE = process.env.NAMESPACE || 'desconhecido';
+
+// Target for cross-namespace communication test
+const PEER_ROUTE = process.env.PEER_ROUTE || '';   // external Route URL
+const PEER_SERVICE = process.env.PEER_SERVICE || ''; // internal Service DNS
 
 // Detect memory limit from cgroups (works inside containers)
 function getMemoryLimitMB() {
@@ -177,7 +184,113 @@ function buildHTML() {
         <span class="label">Uptime:</span> ${Math.floor(process.uptime())}s
       </div>
     </div>
+
+    ${(PEER_ROUTE || PEER_SERVICE) ? `
+    <div class="card">
+      <h2>Teste de Comunicacao entre Namespaces</h2>
+      <p>Compara a latencia de chamar outro servico via <strong>Route</strong> (externa) vs <strong>Service</strong> (interna).</p>
+
+      <div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+        ${PEER_ROUTE ? '<button class="btn btn-danger" onclick="runLatencyTest(\'route\')">Via Route (anti-pattern)</button>' : ''}
+        ${PEER_SERVICE ? '<button class="btn btn-stress" onclick="runLatencyTest(\'service\')">Via Service (recomendado)</button>' : ''}
+        ${(PEER_ROUTE && PEER_SERVICE) ? '<button class="btn btn-release" onclick="runComparison()">Comparar ambos</button>' : ''}
+      </div>
+
+      <div id="netResult" style="margin-top: 14px;"></div>
+
+      <div id="hopDiagram" style="margin-top: 14px; display: none;">
+        <div style="font-size: 0.82rem; font-weight: 600; margin-bottom: 8px; color: #003556;">Caminho da requisicao:</div>
+        <div id="hopContent"></div>
+      </div>
+    </div>
+    ` : ''}
   </div>
+
+  <script>
+    async function runLatencyTest(mode) {
+      const el = document.getElementById('netResult');
+      el.innerHTML = '<div class="status"><span class="label">Executando 5 chamadas...</span></div>';
+      try {
+        const res = await fetch('/api/call-service?mode=' + mode + '&n=5');
+        const d = await res.json();
+        if (d.error) { el.innerHTML = '<div class="status" style="color:red;">' + d.error + '</div>'; return; }
+        renderResult(el, [d]);
+      } catch (e) { el.innerHTML = '<div class="status" style="color:red;">Erro: ' + e.message + '</div>'; }
+    }
+
+    async function runComparison() {
+      const el = document.getElementById('netResult');
+      el.innerHTML = '<div class="status"><span class="label">Executando comparacao (10 chamadas)...</span></div>';
+      try {
+        const [r1, r2] = await Promise.all([
+          fetch('/api/call-service?mode=route&n=5').then(r => r.json()),
+          fetch('/api/call-service?mode=service&n=5').then(r => r.json())
+        ]);
+        renderResult(el, [r1, r2]);
+      } catch (e) { el.innerHTML = '<div class="status" style="color:red;">Erro: ' + e.message + '</div>'; }
+    }
+
+    function renderResult(el, datasets) {
+      let html = '';
+      for (const d of datasets) {
+        const isRoute = d.mode === 'route';
+        const color = isRoute ? '#c0392b' : '#1e8449';
+        const icon = isRoute ? 'ANTI-PATTERN' : 'RECOMENDADO';
+        html += '<div style="background: #F3F8FD; border-radius: 6px; padding: 12px 14px; margin-bottom: 10px; border-left: 4px solid ' + color + ';">';
+        html += '<div style="font-weight: 600; color: ' + color + '; margin-bottom: 6px;">' + (isRoute ? 'Via Route (externa)' : 'Via Service (interna)');
+        html += ' <span style="font-size:.7rem; padding:2px 8px; border-radius:10px; background:' + (isRoute ? '#fadbd8' : '#d5f5e3') + '; color:' + color + ';">' + icon + '</span></div>';
+        html += '<div style="font-family: monospace; font-size: 0.82rem; line-height: 1.8;">';
+        html += '<span style="color:#555;">Destino:</span> ' + d.targetUrl + '<br>';
+        html += '<span style="color:#555;">Chamadas:</span> ' + d.summary.successCount + '/' + d.iterations + ' com sucesso<br>';
+        html += '<span style="color:#555;">Latencia media:</span> <strong style="font-size: 1.1rem; color:' + color + ';">' + d.summary.avgMs + ' ms</strong><br>';
+        html += '<span style="color:#555;">Min / Max:</span> ' + d.summary.minMs + ' ms / ' + d.summary.maxMs + ' ms';
+        html += '</div></div>';
+      }
+
+      if (datasets.length === 2) {
+        const route = datasets.find(d => d.mode === 'route');
+        const svc = datasets.find(d => d.mode === 'service');
+        if (route && svc && route.summary.avgMs && svc.summary.avgMs) {
+          const factor = (route.summary.avgMs / svc.summary.avgMs).toFixed(1);
+          html += '<div style="background: #fff3cd; border-radius: 6px; padding: 12px 14px; border-left: 4px solid #f0c040; font-size: 0.88rem;">';
+          html += '<strong>Resultado:</strong> A Route e <strong>' + factor + 'x mais lenta</strong> que o Service interno. ';
+          html += 'Para comunicacao entre pods/namespaces, use sempre o Service DNS.';
+          html += '</div>';
+        }
+      }
+
+      el.innerHTML = html;
+
+      // Show hop diagram
+      const diag = document.getElementById('hopDiagram');
+      const hopEl = document.getElementById('hopContent');
+      if (diag && hopEl) {
+        diag.style.display = 'block';
+        hopEl.innerHTML =
+          '<div style="display:flex; gap: 16px; flex-wrap: wrap;">' +
+          '<div style="flex:1; min-width: 250px; background: #fadbd8; border-radius: 8px; padding: 12px; font-size: 0.78rem; line-height: 1.9;">' +
+            '<div style="font-weight:700; color:#c0392b; margin-bottom: 4px;">Route (externa)</div>' +
+            '<div style="font-family: monospace;">' +
+            'Pod A (namespace X)<br>' +
+            '&nbsp;&nbsp;-> OpenShift Router (HAProxy)<br>' +
+            '&nbsp;&nbsp;&nbsp;&nbsp;-> DNS externo<br>' +
+            '&nbsp;&nbsp;&nbsp;&nbsp;-> TLS termination<br>' +
+            '&nbsp;&nbsp;-> OpenShift Router (HAProxy)<br>' +
+            'Pod B (namespace Y)' +
+            '</div><div style="color:#c0392b; font-weight:600; margin-top:4px;">6 hops | +latencia | +carga no Router</div>' +
+          '</div>' +
+          '<div style="flex:1; min-width: 250px; background: #d5f5e3; border-radius: 8px; padding: 12px; font-size: 0.78rem; line-height: 1.9;">' +
+            '<div style="font-weight:700; color:#1e8449; margin-bottom: 4px;">Service (interna)</div>' +
+            '<div style="font-family: monospace;">' +
+            'Pod A (namespace X)<br>' +
+            '&nbsp;&nbsp;-> OVN / cluster SDN<br>' +
+            'Pod B (namespace Y)' +
+            '</div><div style="color:#1e8449; font-weight:600; margin-top:4px;">2 hops | latencia minima | trafego interno</div>' +
+          '</div>' +
+          '</div>';
+      }
+    }
+  </script>
 </body>
 </html>`;
 }
@@ -269,6 +382,76 @@ app.get('/release', (req, res) => {
   }
   console.log(`[MEM] Liberados ${count} blocos`);
   res.redirect('/');
+});
+
+// --- Ping endpoint (target for latency test) ---
+app.get('/ping', (req, res) => {
+  res.json({ pong: true, pod: POD_NAME, namespace: NAMESPACE, ts: Date.now() });
+});
+
+// --- Cross-namespace communication test ---
+function httpGet(url) {
+  return new Promise((resolve, reject) => {
+    const mod = url.startsWith('https') ? https : http;
+    // Force new connection each time (no keep-alive) to measure true per-request overhead
+    const agent = new mod.Agent({ keepAlive: false, rejectUnauthorized: false });
+    const start = process.hrtime.bigint();
+    mod.get(url, { timeout: 5000, agent }, (resp) => {
+      let data = '';
+      resp.on('data', chunk => data += chunk);
+      resp.on('end', () => {
+        const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
+        agent.destroy();
+        try { resolve({ latencyMs: +elapsed.toFixed(2), response: JSON.parse(data) }); }
+        catch (e) { resolve({ latencyMs: +elapsed.toFixed(2), response: data }); }
+      });
+    }).on('error', (err) => {
+      const elapsed = Number(process.hrtime.bigint() - start) / 1e6;
+      agent.destroy();
+      reject({ latencyMs: +elapsed.toFixed(2), error: err.message });
+    });
+  });
+}
+
+app.get('/api/call-service', async (req, res) => {
+  const mode = req.query.mode; // 'route' or 'service'
+  const iterations = Math.min(parseInt(req.query.n) || 5, 20);
+
+  let targetUrl;
+  let label;
+  if (mode === 'route' && PEER_ROUTE) {
+    targetUrl = `https://${PEER_ROUTE}/ping`;
+    label = `Route (${PEER_ROUTE})`;
+  } else if (mode === 'service' && PEER_SERVICE) {
+    targetUrl = `http://${PEER_SERVICE}/ping`;
+    label = `Service (${PEER_SERVICE})`;
+  } else {
+    return res.json({ error: 'Modo invalido ou variavel PEER_ROUTE / PEER_SERVICE nao configurada', mode, PEER_ROUTE, PEER_SERVICE });
+  }
+
+  const results = [];
+  for (let i = 0; i < iterations; i++) {
+    try {
+      const r = await httpGet(targetUrl);
+      results.push({ ok: true, latencyMs: r.latencyMs, peer: r.response.pod || 'unknown' });
+    } catch (e) {
+      results.push({ ok: false, latencyMs: e.latencyMs, error: e.error });
+    }
+  }
+
+  const latencies = results.filter(r => r.ok).map(r => r.latencyMs);
+  const avg = latencies.length ? +(latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(2) : null;
+  const min = latencies.length ? Math.min(...latencies) : null;
+  const max = latencies.length ? Math.max(...latencies) : null;
+
+  res.json({
+    mode,
+    label,
+    targetUrl,
+    iterations,
+    results,
+    summary: { avgMs: avg, minMs: min, maxMs: max, successCount: latencies.length }
+  });
 });
 
 // --- Start ---
