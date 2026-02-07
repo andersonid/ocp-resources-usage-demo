@@ -5,6 +5,8 @@ metadata:
   namespace: app-bom
   labels:
     app: stress-app
+    app.kubernetes.io/owner: "time-plataforma"
+    app.kubernetes.io/cost-center: "infra-001"
 spec:
   replicas: 1
   selector:
