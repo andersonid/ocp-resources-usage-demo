@@ -34,8 +34,8 @@ spec:
                   name: stress-app
                   namespace: app-bom
                   labels:
-                    app.kubernetes.io/owner: ""
-                    app.kubernetes.io/cost-center: ""
+                    app.kubernetes.io/owner: "time-plataforma"
+                    app.kubernetes.io/cost-center: "infra-001"
     - objectDefinition:
         apiVersion: policy.open-cluster-management.io/v1
         kind: ConfigurationPolicy
@@ -59,8 +59,8 @@ spec:
                   name: stress-app
                   namespace: app-ruim
                   labels:
-                    app.kubernetes.io/owner: ""
-                    app.kubernetes.io/cost-center: ""
+                    app.kubernetes.io/owner: "time-plataforma"
+                    app.kubernetes.io/cost-center: "infra-001"
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
