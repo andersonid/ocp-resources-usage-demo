@@ -322,7 +322,7 @@ app.get('/', (req, res) => {
 
     <div class="cmd-card">
       <span class="cmd-label">Recomendações do VPA:</span>
-      <code class="cmd-code" id="vpaCmd">oc describe vpa workload-simulator -n vpa-demo | grep -A 20 "Container Recommendations"</code>
+      <code class="cmd-code" id="vpaCmd">oc describe vpa vpa-workload-simulator -n vpa-demo | grep -A 20 "Container Recommendations"</code>
       <button class="cmd-copy" onclick="copyCmd()" id="copyBtn" title="Copiar comando">Copiar</button>
     </div>
   </div>
