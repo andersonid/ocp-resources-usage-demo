@@ -37,7 +37,7 @@ body {
 
 /* === Topbar === */
 .topbar {
-  background: linear-gradient(135deg, var(--dark-blue) 0%, #1a3d52 100%);
+  background: #1a5276;
   color: white;
   padding: 12px 32px;
   display: flex;

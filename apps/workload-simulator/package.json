@@ -1,0 +1,12 @@
+{
+  "name": "workload-simulator",
+  "version": "1.0.0",
+  "description": "Simulates a realistic API workload with oscillating user traffic for VPA demonstration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
