@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-ruim
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/andersonid/ocp-resources-usage-demo.git
+    targetRevision: main
+    path: gitops/app-ruim
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app-ruim
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

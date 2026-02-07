@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-bom
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/andersonid/ocp-resources-usage-demo.git
+    targetRevision: main
+    path: gitops/app-bom
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: app-bom
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
