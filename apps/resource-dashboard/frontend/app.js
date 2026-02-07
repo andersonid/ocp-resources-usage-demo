@@ -28,7 +28,7 @@ function renderDashboard(namespaces) {
 
 function renderNamespacePanel(ns) {
   const type = ns.namespace.includes('ruim') ? 'bad' : 'good';
-  const label = type === 'bad' ? 'Praticas Ruins' : 'Boas Praticas';
+  const label = type === 'bad' ? 'Práticas Ruins' : 'Boas Práticas';
   const badge = type === 'bad'
     ? '<span class="ns-badge bad">Anti-pattern</span>'
     : '<span class="ns-badge good">Recomendado</span>';
@@ -38,15 +38,15 @@ function renderNamespacePanel(ns) {
   const oomBanner = oomPods.length > 0
     ? `<div class="oomkill-banner">
         <span class="oomkill-icon">!</span>
-        <span><strong>OOMKilled detectado!</strong> ${oomPods.length > 1 ? oomPods.length + ' pods foram' : 'Pod <em>' + oomPods[0].name + '</em> foi'} terminado(s) por exceder o limit de memoria.</span>
+        <span><strong>OOMKilled detectado!</strong> ${oomPods.length > 1 ? oomPods.length + ' pods foram' : 'Pod <em>' + oomPods[0].name + '</em> foi'} terminado(s) por exceder o limit de memória.</span>
       </div>`
     : '';
 
   return `
-    <div class="ns-panel">
+    <div class="ns-panel ${type}">
       <div class="ns-header ${type}">
         <div class="ns-name">${ns.namespace} ${badge}</div>
-        <div class="ns-subtitle">${label} -- ${ns.podCount} pod(s) em execucao</div>
+        <div class="ns-subtitle">${label} -- ${ns.podCount} pod(s) em execução</div>
       </div>
       ${oomBanner}
 
@@ -90,7 +90,7 @@ function renderResourceCard(ns) {
 
       <div class="bar-group">
         <div class="bar-label">
-          <span>Memoria</span>
+          <span>Memória</span>
           <strong>${t.usage.memory_mib} Mi / ${t.requests.memory_mib} Mi request / ${t.limits.memory_mib} Mi limit</strong>
         </div>
         <div class="bar-track">
@@ -121,13 +121,13 @@ function renderHPACard(ns) {
 
   let statusMsg;
   if (cpuPct === null) {
-    statusMsg = 'Aguardando metricas...';
+    statusMsg = 'Aguardando métricas...';
   } else if (isScaling) {
     statusMsg = `Escalando! CPU em ${cpuPct}% (target: ${h.targetCPUPercent}%)`;
   } else if (cpuPct < h.targetCPUPercent) {
-    statusMsg = `Estavel - CPU em ${cpuPct}% (target: ${h.targetCPUPercent}%)`;
+    statusMsg = `Estável - CPU em ${cpuPct}% (target: ${h.targetCPUPercent}%)`;
   } else {
-    statusMsg = `CPU em ${cpuPct}% - proximo do threshold`;
+    statusMsg = `CPU em ${cpuPct}% - próximo do threshold`;
   }
 
   return `
@@ -166,12 +166,12 @@ function renderAntiPatterns(ns) {
 
   if (type === 'good') {
     const cpuLine = isIdle
-      ? '<div class="alert-item"><strong>Desperdicio de CPU:</strong> aplicacao ociosa -- aguardando carga para calcular</div>'
-      : `<div class="alert-item"><strong>Desperdicio de CPU:</strong> ${ap.cpuWastePercent}%</div>`;
+      ? '<div class="alert-item"><strong>Desperdício de CPU:</strong> aplicação ociosa -- aguardando carga para calcular</div>'
+      : `<div class="alert-item"><strong>Desperdício de CPU:</strong> ${ap.cpuWastePercent}%</div>`;
 
     return `
       <div class="card">
-        <div class="card-title">Analise de Configuracao</div>
+        <div class="card-title">Análise de Configuração</div>
         <div class="alert-box success">
           <div class="alert-item"><strong>Requests menores que limits</strong> -- permite burst e reaproveitamento de recursos</div>
           ${cpuLine}
@@ -182,17 +182,17 @@ function renderAntiPatterns(ns) {
 
   const alerts = [];
   if (ap.requestsEqualsLimits) {
-    alerts.push('<strong>Requests = Limits (QoS Guaranteed)</strong> -- o Kubernetes nao pode realocar recursos ociosos');
+    alerts.push('<strong>Requests = Limits (QoS Guaranteed)</strong> -- o Kubernetes não pode realocar recursos ociosos');
   }
   if (isIdle) {
-    alerts.push('<strong>Desperdicio de CPU:</strong> aplicacao ociosa -- aguardando carga para calcular');
-    alerts.push('<strong>Desperdicio de Memoria:</strong> aplicacao ociosa -- aguardando carga para calcular');
+    alerts.push('<strong>Desperdício de CPU:</strong> aplicação ociosa -- aguardando carga para calcular');
+    alerts.push('<strong>Desperdício de Memória:</strong> aplicação ociosa -- aguardando carga para calcular');
   } else {
-    alerts.push(`<strong>Desperdicio de CPU:</strong> ${ap.cpuWastePercent}% dos requests nao sao utilizados`);
-    alerts.push(`<strong>Desperdicio de Memoria:</strong> ${ap.memWastePercent}% dos requests nao sao utilizados`);
+    alerts.push(`<strong>Desperdício de CPU:</strong> ${ap.cpuWastePercent}% dos requests não são utilizados`);
+    alerts.push(`<strong>Desperdício de Memória:</strong> ${ap.memWastePercent}% dos requests não são utilizados`);
   }
   if (ap.cpuWastePercent > 80) {
-    alerts.push('<strong>HPA travado</strong> -- com requests tao altos, a % de uso nunca atinge o threshold');
+    alerts.push('<strong>HPA travado</strong> -- com requests tão altos, a % de uso nunca atinge o threshold');
   }
 
   return `

@@ -49,7 +49,7 @@ function getTheme() {
       badge: 'Anti-pattern',
       badgeBg: '#fadbd8',
       badgeColor: '#b03a2e',
-      label: 'Praticas Ruins'
+      label: 'Práticas Ruins'
     };
   }
   return {
@@ -59,7 +59,7 @@ function getTheme() {
     badge: 'Recomendado',
     badgeBg: '#d5f5e3',
     badgeColor: '#1e8449',
-    label: 'Boas Praticas'
+    label: 'Boas Práticas'
   };
 }
 
@@ -69,20 +69,20 @@ function getYamlSnippets() {
 
   const resources = isRuim
     ? `<span class="yaml-comment"># deployment.yaml -- anti-pattern: requests = limits (QoS Guaranteed)</span>
-<span class="yaml-comment"># Recursos superdimensionados, sem espaco para burst</span>
+<span class="yaml-comment"># Recursos superdimensionados, sem espaço para burst</span>
 <span class="yaml-key">resources:</span>
   <span class="yaml-key">requests:</span>
     <span class="yaml-key">cpu:</span> <span class="yaml-bad">"2000m"</span>      <span class="yaml-comment"># 2 vCPUs reservados (provavelmente usa &lt;100m)</span>
     <span class="yaml-key">memory:</span> <span class="yaml-bad">"2Gi"</span>     <span class="yaml-comment"># 2 Gi reservados (provavelmente usa ~60Mi)</span>
   <span class="yaml-key">limits:</span>
     <span class="yaml-key">cpu:</span> <span class="yaml-bad">"2000m"</span>      <span class="yaml-comment"># = requests (sem burst permitido)</span>
-    <span class="yaml-key">memory:</span> <span class="yaml-bad">"2Gi"</span>     <span class="yaml-comment"># = requests (QoS Guaranteed desnecessario)</span>`
+    <span class="yaml-key">memory:</span> <span class="yaml-bad">"2Gi"</span>     <span class="yaml-comment"># = requests (QoS Guaranteed desnecessário)</span>`
     : `<span class="yaml-comment"># deployment.yaml -- recomendado: requests &lt; limits (QoS Burstable)</span>
-<span class="yaml-comment"># Reserva o minimo, permite burst ate o limit</span>
+<span class="yaml-comment"># Reserva o mínimo, permite burst até o limit</span>
 <span class="yaml-key">resources:</span>
   <span class="yaml-key">requests:</span>
     <span class="yaml-key">cpu:</span> <span class="yaml-value">"50m"</span>        <span class="yaml-comment"># Reserva modesta baseada em uso real</span>
-    <span class="yaml-key">memory:</span> <span class="yaml-value">"128Mi"</span>   <span class="yaml-comment"># Suficiente para operacao normal</span>
+    <span class="yaml-key">memory:</span> <span class="yaml-value">"128Mi"</span>   <span class="yaml-comment"># Suficiente para operação normal</span>
   <span class="yaml-key">limits:</span>
     <span class="yaml-key">cpu:</span> <span class="yaml-value">"200m"</span>       <span class="yaml-comment"># Permite burst ate 4x o request</span>
     <span class="yaml-key">memory:</span> <span class="yaml-value">"256Mi"</span>   <span class="yaml-comment"># Teto de seguranca (2x request)</span>`;
@@ -116,11 +116,11 @@ function getYamlSnippets() {
         <span class="yaml-key">averageUtilization:</span> <span class="yaml-value">70</span>  <span class="yaml-comment"># 70% de 50m = 35m (escala com pouca carga)</span>`;
 
   const networking = isRuim
-    ? `<span class="yaml-comment"># deployment.yaml -- anti-pattern: usa Route externa para comunicacao interna</span>
+    ? `<span class="yaml-comment"># deployment.yaml -- anti-pattern: usa Route externa para comunicação interna</span>
 <span class="yaml-key">env:</span>
 - <span class="yaml-key">name:</span> <span class="yaml-value">PEER_ROUTE</span>
   <span class="yaml-key">value:</span> <span class="yaml-bad">"stress-app-app-bom.apps.cluster-xxx.opentlc.com"</span>
-<span class="yaml-comment"># Trafego sai do cluster, passa pelo Router/HAProxy,</span>
+<span class="yaml-comment"># Tráfego sai do cluster, passa pelo Router/HAProxy,</span>
 <span class="yaml-comment"># resolve DNS externo, negocia TLS, e volta.</span>
 <span class="yaml-comment"># Resultado: ~20ms por chamada, carga no Router.</span>`
     : `<span class="yaml-comment"># deployment.yaml -- recomendado: usa Service DNS interno</span>
@@ -128,7 +128,7 @@ function getYamlSnippets() {
 - <span class="yaml-key">name:</span> <span class="yaml-value">PEER_SERVICE</span>
   <span class="yaml-key">value:</span> <span class="yaml-value">"stress-app.app-ruim.svc.cluster.local:8080"</span>
 <span class="yaml-comment"># Formato: &lt;service&gt;.&lt;namespace&gt;.svc.cluster.local:&lt;port&gt;</span>
-<span class="yaml-comment"># Trafego fica 100% dentro do cluster via SDN.</span>
+<span class="yaml-comment"># Tráfego fica 100% dentro do cluster via SDN.</span>
 <span class="yaml-comment"># Resultado: ~5ms por chamada, sem carga no Router.</span>`;
 
   return { resources, hpa, networking };
@@ -231,10 +231,10 @@ function buildHTML() {
       </div>
       <div class="yaml-popup" id="yamlResources">
         <button class="yaml-close" onclick="toggleYaml('yamlResources')">&times;</button>
-        <div class="yaml-title">Configuracao de Resources (deployment.yaml)</div>
+        <div class="yaml-title">Configuração de Resources (deployment.yaml)</div>
 ${yaml.resources}
 
-<div class="yaml-title" style="margin-top: 12px;">Configuracao do HPA (hpa.yaml)</div>
+<div class="yaml-title" style="margin-top: 12px;">Configuração do HPA (hpa.yaml)</div>
 ${yaml.hpa}
       </div>
       <p>Gera consumo de CPU para demonstrar o comportamento do HPA.</p>
@@ -244,19 +244,19 @@ ${yaml.hpa}
         <a class="btn btn-danger" href="/load?duration=300&intensity=4">5min - Pesado</a>
       </div>
       <div class="status">
-        <span class="label">Carga ativa:</span> ${cpuStressActive ? '<span class="badge badge-on">SIM</span>' : '<span class="badge badge-off">NAO</span>'}<br>
+        <span class="label">Carga ativa:</span> ${cpuStressActive ? '<span class="badge badge-on">SIM</span>' : '<span class="badge badge-off">NÃO</span>'}<br>
         <span class="label">Cores disponiveis:</span> ${os.cpus().length}
       </div>
     </div>
 
     <div class="card">
       <div class="card-header">
-        <h2>Alocacao de Memoria</h2>
+        <h2>Alocação de Memória</h2>
         <button class="info-btn" onclick="toggleYaml('yamlMemory')" title="Ver YAML">i</button>
       </div>
       <div class="yaml-popup" id="yamlMemory">
         <button class="yaml-close" onclick="toggleYaml('yamlMemory')">&times;</button>
-        <div class="yaml-title">Configuracao de Memory Limits (deployment.yaml)</div>
+        <div class="yaml-title">Configuração de Memory Limits (deployment.yaml)</div>
 ${yaml.resources}
       </div>
       <p>Aloca blocos de memoria para demonstrar os limits de memoria.</p>
@@ -267,7 +267,7 @@ ${yaml.resources}
       ${MEMORY_LIMIT_MB ? `
       <div class="mem-bar-container">
         <div class="mem-bar-label">
-          <span>Memoria: ${(memUsage.rss / 1024 / 1024).toFixed(0)} Mi / ${MEMORY_LIMIT_MB} Mi limit</span>
+          <span>Memória: ${(memUsage.rss / 1024 / 1024).toFixed(0)} Mi / ${MEMORY_LIMIT_MB} Mi limit</span>
           <span class="mem-bar-pct">${Math.round((memUsage.rss / 1024 / 1024) / MEMORY_LIMIT_MB * 100)}%</span>
         </div>
         <div class="mem-bar-track">
@@ -298,15 +298,15 @@ ${yaml.resources}
     ${(PEER_ROUTE || PEER_SERVICE) ? `
     <div class="card">
       <div class="card-header">
-        <h2>Teste de Comunicacao entre Namespaces</h2>
+        <h2>Teste de Comunicação entre Namespaces</h2>
         <button class="info-btn" onclick="toggleYaml('yamlNet')" title="Ver YAML">i</button>
       </div>
       <div class="yaml-popup" id="yamlNet">
         <button class="yaml-close" onclick="toggleYaml('yamlNet')">&times;</button>
-        <div class="yaml-title">Configuracao de comunicacao (deployment.yaml)</div>
+        <div class="yaml-title">Configuração de comunicação (deployment.yaml)</div>
 ${yaml.networking}
       </div>
-      <p>Compara a latencia de chamar outro servico via <strong>Route</strong> (externa) vs <strong>Service</strong> (interna).</p>
+      <p>Compara a latência de chamar outro serviço via <strong>Route</strong> (externa) vs <strong>Service</strong> (interna).</p>
 
       <div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
         ${PEER_ROUTE ? '<button class="btn btn-danger" onclick="runLatencyTest(\'route\')">Via Route (anti-pattern)</button>' : ''}
@@ -343,7 +343,7 @@ ${yaml.networking}
 
     async function runComparison() {
       const el = document.getElementById('netResult');
-      el.innerHTML = '<div class="status"><span class="label">Executando comparacao (10 chamadas)...</span></div>';
+      el.innerHTML = '<div class="status"><span class="label">Executando comparação (10 chamadas)...</span></div>';
       try {
         const [r1, r2] = await Promise.all([
           fetch('/api/call-service?mode=route&n=5').then(r => r.json()),
@@ -365,7 +365,7 @@ ${yaml.networking}
         html += '<div style="font-family: monospace; font-size: 0.82rem; line-height: 1.8;">';
         html += '<span style="color:#555;">Destino:</span> ' + d.targetUrl + '<br>';
         html += '<span style="color:#555;">Chamadas:</span> ' + d.summary.successCount + '/' + d.iterations + ' com sucesso<br>';
-        html += '<span style="color:#555;">Latencia media:</span> <strong style="font-size: 1.1rem; color:' + color + ';">' + d.summary.avgMs + ' ms</strong><br>';
+        html += '<span style="color:#555;">Latência média:</span> <strong style="font-size: 1.1rem; color:' + color + ';">' + d.summary.avgMs + ' ms</strong><br>';
         html += '<span style="color:#555;">Min / Max:</span> ' + d.summary.minMs + ' ms / ' + d.summary.maxMs + ' ms';
         html += '</div></div>';
       }
@@ -377,7 +377,7 @@ ${yaml.networking}
           const factor = (route.summary.avgMs / svc.summary.avgMs).toFixed(1);
           html += '<div style="background: #fff3cd; border-radius: 6px; padding: 12px 14px; border-left: 4px solid #f0c040; font-size: 0.88rem;">';
           html += '<strong>Resultado:</strong> A Route e <strong>' + factor + 'x mais lenta</strong> que o Service interno. ';
-          html += 'Para comunicacao entre pods/namespaces, use sempre o Service DNS.';
+          html += 'Para comunicação entre pods/namespaces, use sempre o Service DNS.';
           html += '</div>';
         }
       }
@@ -400,7 +400,7 @@ ${yaml.networking}
             '&nbsp;&nbsp;&nbsp;&nbsp;-> TLS termination<br>' +
             '&nbsp;&nbsp;-> OpenShift Router (HAProxy)<br>' +
             'Pod B (namespace Y)' +
-            '</div><div style="color:#c0392b; font-weight:600; margin-top:4px;">6 hops | +latencia | +carga no Router</div>' +
+            '</div><div style="color:#c0392b; font-weight:600; margin-top:4px;">6 hops | +latência | +carga no Router</div>' +
           '</div>' +
           '<div style="flex:1; min-width: 250px; background: #d5f5e3; border-radius: 8px; padding: 12px; font-size: 0.78rem; line-height: 1.9;">' +
             '<div style="font-weight:700; color:#1e8449; margin-bottom: 4px;">Service (interna)</div>' +
@@ -408,7 +408,7 @@ ${yaml.networking}
             'Pod A (namespace X)<br>' +
             '&nbsp;&nbsp;-> OVN / cluster SDN<br>' +
             'Pod B (namespace Y)' +
-            '</div><div style="color:#1e8449; font-weight:600; margin-top:4px;">2 hops | latencia minima | trafego interno</div>' +
+            '</div><div style="color:#1e8449; font-weight:600; margin-top:4px;">2 hops | latência mínima | tráfego interno</div>' +
           '</div>' +
           '</div>';
       }
@@ -549,7 +549,7 @@ app.get('/api/call-service', async (req, res) => {
     targetUrl = `http://${PEER_SERVICE}/ping`;
     label = `Service (${PEER_SERVICE})`;
   } else {
-    return res.json({ error: 'Modo invalido ou variavel PEER_ROUTE / PEER_SERVICE nao configurada', mode, PEER_ROUTE, PEER_SERVICE });
+    return res.json({ error: 'Modo inválido ou variável PEER_ROUTE / PEER_SERVICE não configurada', mode, PEER_ROUTE, PEER_SERVICE });
   }
 
   const results = [];

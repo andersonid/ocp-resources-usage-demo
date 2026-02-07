@@ -169,7 +169,7 @@ async function getNamespaceData(namespace) {
 
   return {
     namespace: ns,
-    label: ns === 'app-ruim' ? 'Praticas Ruins' : ns === 'app-bom' ? 'Boas Praticas' : ns,
+    label: ns === 'app-ruim' ? 'Práticas Ruins' : ns === 'app-bom' ? 'Boas Práticas' : ns,
     podCount: podData.length,
     pods: podData,
     hpa: hpaData,

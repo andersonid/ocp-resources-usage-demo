@@ -31,13 +31,19 @@ const MEMORY_LIMIT_MB = getMemoryLimitMB();
 // Workload simulation engine
 // ---------------------------------------------------------------------------
 
-// Configuration
-const CYCLE_MINUTES   = 20;   // full oscillation cycle (peak -> valley -> peak)
+// Configuration -- Peak / off-peak plateau pattern
+// Full cycle: PEAK_MINUTES (high plateau) + OFF_MINUTES (low plateau) = ~2h total
+const PEAK_MINUTES    = 60;   // sustained high-traffic plateau
+const OFF_MINUTES     = 60;   // sustained low-traffic plateau
+const RAMP_MINUTES    = 5;    // transition ramp between plateaus
+const CYCLE_MINUTES   = PEAK_MINUTES + OFF_MINUTES + (RAMP_MINUTES * 2); // total cycle
 const MAX_USERS       = 80;   // peak simulated concurrent users
-const MIN_USERS       = 5;    // valley
+const MIN_USERS       = 5;    // off-hours baseline
+const PEAK_BASE       = 65;   // base users during peak plateau (varies around this)
+const OFF_BASE        = 10;   // base users during off-hours (varies around this)
 const TICK_INTERVAL   = 2000; // ms between simulation ticks
-const BURST_CHANCE    = 0.03; // 3% chance of random traffic burst per tick
-const BURST_MULTIPLIER = 2.5;
+const BURST_CHANCE    = 0.02; // 2% chance of random traffic burst during peak
+const BURST_MULTIPLIER = 1.8;
 
 // State
 let currentUsers  = MIN_USERS;
@@ -54,24 +60,45 @@ let stats = {
   peakMemMB: 0,
 };
 
-// Compute current simulated users based on sine wave + noise
+// Compute current simulated users based on peak/off-peak plateau pattern
+// Pattern: [ramp-up] [peak plateau ~1h] [ramp-down] [off-hours plateau ~1h] [repeat]
 function computeUsers() {
   const elapsed = (Date.now() - stats.startTime) / 1000; // seconds
   const cycleSec = CYCLE_MINUTES * 60;
-  const phase = (elapsed % cycleSec) / cycleSec * 2 * Math.PI;
+  const rampSec = RAMP_MINUTES * 60;
+  const peakSec = PEAK_MINUTES * 60;
+  const offSec = OFF_MINUTES * 60;
 
-  // Sine wave base
-  const amplitude = (MAX_USERS - MIN_USERS) / 2;
-  const base = MIN_USERS + amplitude + amplitude * Math.sin(phase);
+  const posInCycle = elapsed % cycleSec;
 
-  // Random noise (+/- 15%)
-  const noise = base * (0.85 + Math.random() * 0.30);
+  let base;
 
-  // Random burst
+  if (posInCycle < rampSec) {
+    // Phase 1: Ramp up (off -> peak)
+    const progress = posInCycle / rampSec; // 0..1
+    base = OFF_BASE + (PEAK_BASE - OFF_BASE) * progress;
+  } else if (posInCycle < rampSec + peakSec) {
+    // Phase 2: Peak plateau (~1h sustained high traffic)
+    base = PEAK_BASE;
+  } else if (posInCycle < rampSec + peakSec + rampSec) {
+    // Phase 3: Ramp down (peak -> off)
+    const progress = (posInCycle - rampSec - peakSec) / rampSec; // 0..1
+    base = PEAK_BASE - (PEAK_BASE - OFF_BASE) * progress;
+  } else {
+    // Phase 4: Off-hours plateau (~1h sustained low traffic)
+    base = OFF_BASE;
+  }
+
+  // Small natural variation (+/- 12%) -- mimics real user fluctuation
+  const noise = base * (0.88 + Math.random() * 0.24);
+
+  // Random burst (only during peak hours)
   let burst = 1;
-  if (Math.random() < BURST_CHANCE) {
-    burst = BURST_MULTIPLIER;
-    stats.lastBurst = new Date().toISOString();
+  if (posInCycle >= rampSec && posInCycle < rampSec + peakSec) {
+    if (Math.random() < BURST_CHANCE) {
+      burst = BURST_MULTIPLIER;
+      stats.lastBurst = new Date().toISOString();
+    }
   }
 
   return Math.max(MIN_USERS, Math.min(MAX_USERS * BURST_MULTIPLIER, Math.round(noise * burst)));
@@ -162,6 +189,11 @@ app.get('/api/status', (req, res) => {
       currentUsers,
       targetMemMB,
       cycleMinutes: CYCLE_MINUTES,
+      peakMinutes: PEAK_MINUTES,
+      offMinutes: OFF_MINUTES,
+      rampMinutes: RAMP_MINUTES,
+      peakBase: PEAK_BASE,
+      offBase: OFF_BASE,
       maxUsers: MAX_USERS,
       minUsers: MIN_USERS,
       tickIntervalMs: TICK_INTERVAL,
@@ -229,16 +261,17 @@ app.get('/', (req, res) => {
 
   <div class="container">
     <div class="info-banner">
-      <strong>Simulacao de carga automatica</strong> -- Esta aplicacao simula um backend de API com trafego
-      oscilante de usuarios virtuais. O VPA (Vertical Pod Autoscaler) coleta essas metricas ao longo do tempo
-      para recomendar valores ideais de requests e limits.
-      <br>Ciclo completo: <strong>${CYCLE_MINUTES} minutos</strong> (pico a pico).
+      <strong>Simulação de carga automática</strong> -- Esta aplicação simula um backend de API com tráfego
+      oscilante: <strong>${PEAK_MINUTES} min de pico</strong> (~${PEAK_BASE} usuários) seguidos de
+      <strong>${OFF_MINUTES} min fora de pico</strong> (~${OFF_BASE} usuários), com transições graduais de ${RAMP_MINUTES} min.
+      <br>O VPA coleta essas métricas ao longo do tempo para recomendar valores ideais de requests e limits.
+      <br>Ciclo completo: <strong>${CYCLE_MINUTES} minutos</strong> (~2h).
     </div>
 
     <div class="grid">
       <div class="card">
         <div class="card-value" id="users">--</div>
-        <div class="card-label">Usuarios simulados</div>
+        <div class="card-label">Usuários simulados</div>
         <div class="card-sub">min: ${MIN_USERS} / max: ${MAX_USERS}</div>
       </div>
       <div class="card">
@@ -248,8 +281,8 @@ app.get('/', (req, res) => {
       </div>
       <div class="card">
         <div class="card-value" id="memHeld">--</div>
-        <div class="card-label">Memoria alocada (MB)</div>
-        <div class="card-sub">sessoes/cache simulados</div>
+        <div class="card-label">Memória alocada (MB)</div>
+        <div class="card-sub">sessões/cache simulados</div>
       </div>
       <div class="card">
         <div class="card-value" id="rss">--</div>
@@ -268,7 +301,7 @@ app.get('/', (req, res) => {
         </div>
       </div>
       <div class="bar-row">
-        <div class="bar-label">Memoria</div>
+        <div class="bar-label">Memória</div>
         <div class="bar-track">
           <div class="bar-fill mem" id="memBar" style="width: 0%"></div>
           <div class="bar-text" id="memText">--</div>
@@ -277,7 +310,7 @@ app.get('/', (req, res) => {
     </div>
 
     <div class="chart-container">
-      <div class="chart-title">Historico de usuarios simulados (ultimos 5 min)</div>
+      <div class="chart-title">Histórico de usuários simulados (últimos 10 min)</div>
       <canvas id="chart"></canvas>
     </div>
   </div>
@@ -288,7 +321,7 @@ app.get('/', (req, res) => {
 
   <script>
     const history = [];
-    const MAX_HISTORY = 100; // 100 * 3s = 5min
+    const MAX_HISTORY = 200; // 200 * 3s = 10min
 
     function drawChart(canvas, data) {
       const ctx = canvas.getContext('2d');
@@ -390,5 +423,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log('Workload Simulator running on port ' + PORT);
   console.log('Memory limit detected: ' + (MEMORY_LIMIT_MB ? MEMORY_LIMIT_MB + ' MB' : 'none'));
-  console.log('Cycle: ' + CYCLE_MINUTES + ' min | Users: ' + MIN_USERS + '-' + MAX_USERS);
+  console.log('Pattern: ' + PEAK_MINUTES + 'min peak (' + PEAK_BASE + ' users) + ' + OFF_MINUTES + 'min off (' + OFF_BASE + ' users) | Ramp: ' + RAMP_MINUTES + 'min');
 });
