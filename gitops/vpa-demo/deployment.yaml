@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-simulator
+  namespace: vpa-demo
+  labels:
+    app: workload-simulator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workload-simulator
+  template:
+    metadata:
+      labels:
+        app: workload-simulator
+    spec:
+      containers:
+        - name: workload-simulator
+          image: image-registry.openshift-image-registry.svc:5000/demo-builds/workload-simulator:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "1"
+              memory: 1Gi
+            limits:
+              cpu: "1"
+              memory: 1Gi

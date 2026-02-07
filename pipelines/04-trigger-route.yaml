@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: github-webhook
+  namespace: demo-builds
+spec:
+  to:
+    kind: Service
+    name: el-github-listener
+  port:
+    targetPort: http-listener
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

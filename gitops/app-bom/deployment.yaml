@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-app
+  namespace: app-bom
+  labels:
+    app: stress-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stress-app
+  template:
+    metadata:
+      labels:
+        app: stress-app
+    spec:
+      containers:
+        - name: stress-app
+          image: image-registry.openshift-image-registry.svc:5000/demo-builds/stress-app:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: PEER_SERVICE
+              value: "stress-app.app-ruim.svc.cluster.local:8080"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi

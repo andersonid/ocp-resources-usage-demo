@@ -1,0 +1,71 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build-and-push
+  namespace: demo-builds
+spec:
+  params:
+    - name: GIT_URL
+      type: string
+      description: Git repository URL
+      default: "https://github.com/andersonid/ocp-resources-usage-demo.git"
+    - name: GIT_REVISION
+      type: string
+      description: Git branch or revision
+      default: "main"
+    - name: APP_NAME
+      type: string
+      description: Application name (stress-app, resource-dashboard, workload-simulator)
+    - name: APP_PATH
+      type: string
+      description: Path to the app directory inside the repo (e.g. apps/stress-app)
+    - name: IMAGE
+      type: string
+      description: Full image reference to push to
+  workspaces:
+    - name: source
+  tasks:
+    - name: clone
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: openshift-pipelines
+      params:
+        - name: URL
+          value: $(params.GIT_URL)
+        - name: REVISION
+          value: $(params.GIT_REVISION)
+        - name: DELETE_EXISTING
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: source
+    - name: build
+      taskRef:
+        resolver: cluster
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: buildah
+          - name: namespace
+            value: openshift-pipelines
+      runAfter:
+        - clone
+      params:
+        - name: IMAGE
+          value: $(params.IMAGE)
+        - name: CONTEXT
+          value: $(params.APP_PATH)
+        - name: DOCKERFILE
+          value: $(params.APP_PATH)/Dockerfile
+        - name: TLS_VERIFY
+          value: "false"
+      workspaces:
+        - name: source
+          workspace: source

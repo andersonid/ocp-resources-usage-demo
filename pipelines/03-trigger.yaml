@@ -1,0 +1,158 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: github-push-binding
+  namespace: demo-builds
+spec:
+  params:
+    - name: GIT_URL
+      value: $(body.repository.clone_url)
+    - name: GIT_REVISION
+      value: $(body.after)
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: build-stress-app
+  namespace: demo-builds
+spec:
+  params:
+    - name: GIT_URL
+    - name: GIT_REVISION
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: stress-app-run-
+      spec:
+        pipelineRef:
+          name: build-and-push
+        params:
+          - name: GIT_URL
+            value: $(tt.params.GIT_URL)
+          - name: GIT_REVISION
+            value: $(tt.params.GIT_REVISION)
+          - name: APP_NAME
+            value: stress-app
+          - name: APP_PATH
+            value: apps/stress-app
+          - name: IMAGE
+            value: image-registry.openshift-image-registry.svc:5000/demo-builds/stress-app:latest
+        workspaces:
+          - name: source
+            persistentVolumeClaim:
+              claimName: pipeline-workspace
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: build-resource-dashboard
+  namespace: demo-builds
+spec:
+  params:
+    - name: GIT_URL
+    - name: GIT_REVISION
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: resource-dashboard-run-
+      spec:
+        pipelineRef:
+          name: build-and-push
+        params:
+          - name: GIT_URL
+            value: $(tt.params.GIT_URL)
+          - name: GIT_REVISION
+            value: $(tt.params.GIT_REVISION)
+          - name: APP_NAME
+            value: resource-dashboard
+          - name: APP_PATH
+            value: apps/resource-dashboard
+          - name: IMAGE
+            value: image-registry.openshift-image-registry.svc:5000/demo-builds/resource-dashboard:latest
+        workspaces:
+          - name: source
+            persistentVolumeClaim:
+              claimName: pipeline-workspace
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: build-workload-simulator
+  namespace: demo-builds
+spec:
+  params:
+    - name: GIT_URL
+    - name: GIT_REVISION
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: workload-simulator-run-
+      spec:
+        pipelineRef:
+          name: build-and-push
+        params:
+          - name: GIT_URL
+            value: $(tt.params.GIT_URL)
+          - name: GIT_REVISION
+            value: $(tt.params.GIT_REVISION)
+          - name: APP_NAME
+            value: workload-simulator
+          - name: APP_PATH
+            value: apps/workload-simulator
+          - name: IMAGE
+            value: image-registry.openshift-image-registry.svc:5000/demo-builds/workload-simulator:latest
+        workspaces:
+          - name: source
+            persistentVolumeClaim:
+              claimName: pipeline-workspace
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-listener
+  namespace: demo-builds
+spec:
+  serviceAccountName: pipeline
+  triggers:
+    - name: stress-app-trigger
+      interceptors:
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: >-
+                body.ref == 'refs/heads/main' &&
+                body.commits.exists(c, c.modified.exists(f, f.startsWith('apps/stress-app/')) || c.added.exists(f, f.startsWith('apps/stress-app/')))
+      bindings:
+        - ref: github-push-binding
+      template:
+        ref: build-stress-app
+    - name: resource-dashboard-trigger
+      interceptors:
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: >-
+                body.ref == 'refs/heads/main' &&
+                body.commits.exists(c, c.modified.exists(f, f.startsWith('apps/resource-dashboard/')) || c.added.exists(f, f.startsWith('apps/resource-dashboard/')))
+      bindings:
+        - ref: github-push-binding
+      template:
+        ref: build-resource-dashboard
+    - name: workload-simulator-trigger
+      interceptors:
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: >-
+                body.ref == 'refs/heads/main' &&
+                body.commits.exists(c, c.modified.exists(f, f.startsWith('apps/workload-simulator/')) || c.added.exists(f, f.startsWith('apps/workload-simulator/')))
+      bindings:
+        - ref: github-push-binding
+      template:
+        ref: build-workload-simulator
