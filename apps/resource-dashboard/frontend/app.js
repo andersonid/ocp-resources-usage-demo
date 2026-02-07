@@ -161,13 +161,19 @@ function renderAntiPatterns(ns) {
   const ap = ns.antiPatterns;
   const type = ns.namespace.includes('ruim') ? 'bad' : 'good';
 
+  const isIdle = ns.totals.usage.cpu_millicores <= 1;
+
   if (type === 'good') {
+    const cpuLine = isIdle
+      ? '<div class="alert-item"><strong>Desperdicio de CPU:</strong> aplicacao ociosa -- aguardando carga para calcular</div>'
+      : `<div class="alert-item"><strong>Desperdicio de CPU:</strong> ${ap.cpuWastePercent}%</div>`;
+
     return `
       <div class="card">
         <div class="card-title">Analise de Configuracao</div>
         <div class="alert-box success">
           <div class="alert-item"><strong>Requests menores que limits</strong> -- permite burst e reaproveitamento de recursos</div>
-          <div class="alert-item"><strong>Desperdicio de CPU:</strong> ${ap.cpuWastePercent}%</div>
+          ${cpuLine}
           <div class="alert-item"><strong>HPA funcional</strong> -- o threshold sera atingido com carga real</div>
         </div>
       </div>`;
@@ -177,8 +183,13 @@ function renderAntiPatterns(ns) {
   if (ap.requestsEqualsLimits) {
     alerts.push('<strong>Requests = Limits (QoS Guaranteed)</strong> -- o Kubernetes nao pode realocar recursos ociosos');
   }
-  alerts.push(`<strong>Desperdicio de CPU:</strong> ${ap.cpuWastePercent}% dos requests nao sao utilizados`);
-  alerts.push(`<strong>Desperdicio de Memoria:</strong> ${ap.memWastePercent}% dos requests nao sao utilizados`);
+  if (isIdle) {
+    alerts.push('<strong>Desperdicio de CPU:</strong> aplicacao ociosa -- aguardando carga para calcular');
+    alerts.push('<strong>Desperdicio de Memoria:</strong> aplicacao ociosa -- aguardando carga para calcular');
+  } else {
+    alerts.push(`<strong>Desperdicio de CPU:</strong> ${ap.cpuWastePercent}% dos requests nao sao utilizados`);
+    alerts.push(`<strong>Desperdicio de Memoria:</strong> ${ap.memWastePercent}% dos requests nao sao utilizados`);
+  }
   if (ap.cpuWastePercent > 80) {
     alerts.push('<strong>HPA travado</strong> -- com requests tao altos, a % de uso nunca atinge o threshold');
   }
