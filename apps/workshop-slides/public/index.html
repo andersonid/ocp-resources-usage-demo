@@ -676,7 +676,7 @@
 <section>
   <section>
     <h2>Parte 2 -- Fundamentos Técnicos</h2>
-    <p style="color:#999;">~20 minutos</p>
+    <p style="color:#999;">~25 minutos</p>
     <aside class="notes">
       Agora que viram o problema real -- desperdício, HPA travado, overcommit escondido --
       vamos entender por que isso acontece. Quais são os mecanismos por trás de tudo isso.
@@ -687,8 +687,6 @@
   <section class="center">
     <h3 style="margin-bottom:20px; color:#999;">Requests -- A reserva para o Scheduler</h3>
     <div style="display:flex; align-items:center; justify-content:center; gap:40px; margin-top:10px;">
-
-      <!-- Pod -->
       <div class="fragment fade-right" data-fragment-index="1" style="text-align:center;">
         <div style="border:3px solid #ff9800; border-radius:12px; padding:15px 20px; background:rgba(255,152,0,0.08);">
           <div style="border:2px dashed #ff9800; border-radius:8px; padding:12px 18px;">
@@ -698,27 +696,20 @@
           <div style="font-size:0.9em; font-weight:bold; color:#fff; margin-top:8px;">POD</div>
         </div>
       </div>
-
-      <!-- Seta -->
       <div class="fragment fade-in" data-fragment-index="2" style="font-size:1.5em; color:#999;">&#10132;</div>
-
-      <!-- Barras CPU e Memory -->
       <div class="fragment fade-left" data-fragment-index="2" style="display:flex; gap:30px;">
-        <!-- CPU -->
         <div style="text-align:center;">
           <div style="width:60px; height:180px; border:3px solid #42a5f5; border-radius:6px; position:relative; overflow:hidden; background:rgba(66,165,245,0.05);">
             <div style="position:absolute; right:-18px; top:10%; font-size:0.45em; color:#666;">&#9472;</div>
             <div style="position:absolute; right:-18px; top:30%; font-size:0.45em; color:#666;">&#9472;</div>
             <div style="position:absolute; right:-18px; top:50%; font-size:0.45em; color:#666;">&#9472;</div>
             <div style="position:absolute; right:-18px; top:70%; font-size:0.45em; color:#666;">&#9472;</div>
-            <!-- Request level -->
             <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:0; left:0; right:0; height:35%; background:linear-gradient(0deg,#1565c0,#42a5f5); opacity:0.8;"></div>
             <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:33%; left:-5px; right:-5px; border-top:3px dashed #fff; z-index:2;"></div>
             <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:36%; right:-70px; font-size:0.6em; color:#42a5f5; font-weight:bold; white-space:nowrap;">&#8592; request: 100m</div>
           </div>
           <div style="font-size:0.85em; font-weight:bold; color:#42a5f5; margin-top:8px;">CPU</div>
         </div>
-        <!-- Memory -->
         <div style="text-align:center;">
           <div style="width:60px; height:180px; border:3px solid #ab47bc; border-radius:6px; position:relative; overflow:hidden; background:rgba(171,71,188,0.05);">
             <div style="position:absolute; right:-18px; top:10%; font-size:0.45em; color:#666;">&#9472;</div>
@@ -733,7 +724,6 @@
         </div>
       </div>
     </div>
-
     <div class="fragment fade-up" data-fragment-index="4" style="max-width:650px; margin:25px auto 0; text-align:center;">
       <div class="key-message" style="text-align:left;">
         O <strong>request</strong> diz ao Scheduler: "minha aplicação precisa de pelo menos isso para funcionar."<br>
@@ -754,7 +744,6 @@
   <section class="center">
     <h3 style="margin-bottom:20px; color:#999;">Limits -- O teto máximo</h3>
     <div style="display:flex; align-items:center; justify-content:center; gap:40px; margin-top:10px;">
-
       <div style="text-align:center;">
         <div style="border:3px solid #ff9800; border-radius:12px; padding:15px 20px; background:rgba(255,152,0,0.08);">
           <div style="border:2px dashed #ff9800; border-radius:8px; padding:12px 18px;">
@@ -764,11 +753,8 @@
           <div style="font-size:0.9em; font-weight:bold; color:#fff; margin-top:8px;">POD</div>
         </div>
       </div>
-
       <div style="font-size:1.5em; color:#999;">&#10132;</div>
-
       <div style="display:flex; gap:30px;">
-        <!-- CPU -->
         <div style="text-align:center;">
           <div style="width:60px; height:180px; border:3px solid #42a5f5; border-radius:6px; position:relative; overflow:hidden; background:rgba(66,165,245,0.05);">
             <div style="position:absolute; bottom:0; left:0; right:0; height:35%; background:linear-gradient(0deg,#1565c0,#42a5f5); opacity:0.6;"></div>
@@ -781,7 +767,6 @@
           <div style="font-size:0.85em; font-weight:bold; color:#42a5f5; margin-top:8px;">CPU</div>
           <div class="fragment fade-in" data-fragment-index="2" style="font-size:0.6em; color:#ff9800; margin-top:4px;">Acima do limit:<br><strong>Throttling</strong></div>
         </div>
-        <!-- Memory -->
         <div style="text-align:center;">
           <div style="width:60px; height:180px; border:3px solid #ab47bc; border-radius:6px; position:relative; overflow:hidden; background:rgba(171,71,188,0.05);">
             <div style="position:absolute; bottom:0; left:0; right:0; height:30%; background:linear-gradient(0deg,#7b1fa2,#ab47bc); opacity:0.6;"></div>
@@ -796,7 +781,6 @@
         </div>
       </div>
     </div>
-
     <div class="fragment fade-up" data-fragment-index="3" style="max-width:650px; margin:20px auto 0; text-align:center;">
       <div class="key-message" style="text-align:left;">
         O <strong>limit</strong> é o teto: até onde a aplicação pode chegar em picos de uso.<br>
@@ -818,7 +802,6 @@
   <section class="center">
     <h3 style="margin-bottom:20px; color:#999;">Overcommit -- Por que isso funciona</h3>
     <div style="display:flex; align-items:flex-end; justify-content:center; gap:50px; margin-top:20px;">
-
       <div style="text-align:center; position:relative;">
         <div style="font-size:0.7em; color:#999; margin-bottom:8px;">Capacidade do Nó</div>
         <div style="width:80px; height:260px; border:3px solid #999; border-radius:6px; position:relative; overflow:hidden; background:rgba(255,255,255,0.03);">
@@ -834,7 +817,6 @@
           <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:76%; right:-80px; font-size:0.55em; color:#f44336; white-space:nowrap; font-weight:bold;">&#8592; Soma dos Limits<br><span style="font-size:0.85em;">(ultrapassa o nó)</span></div>
         </div>
       </div>
-
       <div class="fragment fade-in" data-fragment-index="1" style="text-align:left; font-size:0.75em;">
         <div style="margin-bottom:12px;"><span style="display:inline-block; width:14px; height:14px; background:#1e88e5; border-radius:3px; vertical-align:middle; margin-right:8px;"></span> <strong>App A</strong> -- req: 100m, lim: 200m</div>
         <div style="margin-bottom:12px;"><span style="display:inline-block; width:14px; height:14px; background:#43a047; border-radius:3px; vertical-align:middle; margin-right:8px;"></span> <strong>App B</strong> -- req: 80m, lim: 180m</div>
@@ -844,7 +826,6 @@
         </div>
       </div>
     </div>
-
     <div class="fragment fade-up" data-fragment-index="4" style="max-width:650px; margin:20px auto 0; text-align:center;">
       <div class="key-message" style="text-align:left;">
         <strong>Overcommit de CPU</strong>: aceitável -- throttling é tolerável na maioria dos casos.<br>
@@ -856,7 +837,163 @@
       Overcommit: a soma dos limits ultrapassa a capacidade real do nó. Parece perigoso, mas funciona porque
       nem todas as apps usam o máximo ao mesmo tempo. Picos são distribuídos no tempo.
       Overcommit de CPU é aceitável -- throttling. Overcommit de memória é perigoso -- OOMKill.
-      Agora que entendemos requests, limits e overcommit -- a próxima pergunta é: como ajustar esses valores dinamicamente?
+      Agora vamos ver como o OpenShift aplica esses conceitos em dois momentos distintos.
+    </aside>
+  </section>
+
+  <!-- SCHEDULER VS RUNTIME -->
+  <section>
+    <h2>Scheduler vs Runtime</h2>
+    <div class="two-col">
+      <div>
+        <h3><span class="badge-blue">Scheduler</span></h3>
+        <ul>
+          <li>Decide <strong>onde</strong> o pod roda</li>
+          <li>Olha os <strong>requests</strong></li>
+          <li>Requests = <strong>reserva</strong></li>
+          <li>Não sabe o uso real</li>
+        </ul>
+      </div>
+      <div>
+        <h3><span class="badge-yellow">Runtime (kubelet)</span></h3>
+        <ul>
+          <li>Controla <strong>o consumo</strong></li>
+          <li>Olha os <strong>limits</strong></li>
+          <li>Limits = <strong>teto</strong></li>
+          <li>Usa cgroups para impor</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      Acabamos de ver requests, limits e overcommit. Mas em que momento cada um atua?
+      São dois momentos distintos. Primeiro, o Scheduler -- ele olha os requests e decide em qual nó colocar o pod.
+      Segundo, o Runtime -- kubelet e cgroups. Depois que o pod está rodando, quem controla o consumo real é o kubelet.
+      Se o pod ultrapassar o limit de CPU, é throttled. Se ultrapassar memória, é OOMKilled.
+    </aside>
+  </section>
+
+  <!-- CPU VS MEMÓRIA -->
+  <section>
+    <h2>CPU vs Memória</h2>
+    <table>
+      <thead><tr><th>Aspecto</th><th>CPU</th><th>Memória</th></tr></thead>
+      <tbody>
+        <tr><td>Tipo</td><td><span class="badge-green">Compressível</span></td><td><span class="badge-red">Incompressível</span></td></tr>
+        <tr><td>No limit</td><td>Throttling (mais lento)</td><td>OOMKill (morto)</td></tr>
+        <tr><td>Pod sobrevive?</td><td>Sim</td><td>Não</td></tr>
+        <tr><td>Kernel toma de volta?</td><td>Sim, reduz ciclos</td><td>Não, mata o processo</td></tr>
+        <tr><td>Impacto no usuário</td><td>Latência maior</td><td>Erro 500 / conexão perdida</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      CPU é compressível -- o kernel limita ciclos sem matar. O pod fica lento mas continua vivo.
+      Memória é incompressível -- uma vez alocada, o kernel não toma de volta sem matar.
+      Essa diferença é crítica para entender por que o HPA funciona para CPU mas não para memória.
+    </aside>
+  </section>
+
+  <!-- QOS -->
+  <section>
+    <h2>Requests, Limits e QoS</h2>
+    <table>
+      <thead><tr><th></th><th>Guaranteed</th><th>Burstable</th><th>BestEffort</th></tr></thead>
+      <tbody>
+        <tr><td>Configuração</td><td>req = limit</td><td>req &lt; limit</td><td>nenhum</td></tr>
+        <tr><td>Burst?</td><td>Não</td><td>Sim</td><td>Ilimitado</td></tr>
+        <tr><td>Eviction</td><td>Último</td><td>Médio</td><td>Primeiro</td></tr>
+        <tr><td>Ideal para</td><td>DB, Kafka</td><td>Microsserviços</td><td>Jobs descartáveis</td></tr>
+        <tr><td>HPA funciona?</td><td>Quase impossível</td><td>Sim</td><td>N/A</td></tr>
+      </tbody>
+    </table>
+    <div class="key-message fragment">
+      Guaranteed não significa "garante mais recursos". Significa que o pod tem um contrato fixo --
+      nunca consome mais nem menos. Em troca, é o último a ser removido sob pressão.
+    </div>
+    <aside class="notes">
+      O Kubernetes atribui automaticamente uma classe de QoS baseada na relação entre requests e limits.
+      Guaranteed tranca recursos. Burstable permite burst. Para microsserviços, Burstable é quase sempre o caminho certo.
+      Analogia: Guaranteed é reservar uma mesa de 10 lugares para jantar sozinho.
+      Burstable é reservar 1 lugar e usar as cadeiras ao lado se estiverem vazias.
+    </aside>
+  </section>
+
+  <!-- COMPARAÇÃO DIRETA -->
+  <section>
+    <h2>Comparação direta</h2>
+    <table>
+      <thead><tr><th>Aspecto</th><th style="color:#f44336">Guaranteed (2000m/2000m)</th><th style="color:#4caf50">Burstable (50m/200m)</th></tr></thead>
+      <tbody>
+        <tr><td>Reserva no scheduler</td><td>2000m (2 vCPUs)</td><td>50m</td></tr>
+        <tr><td>Máximo que pode usar</td><td>2000m</td><td>200m</td></tr>
+        <tr><td>Pods num node 8 vCPU</td><td>~4</td><td>~160</td></tr>
+        <tr><td>CPU desperdiçada idle</td><td>~1995m trancados</td><td>~45m trancados</td></tr>
+        <tr><td>HPA funciona?</td><td>Quase impossível</td><td>Sim</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Esses são exatamente os nossos dois apps de demonstração. app-ruim com 2000m/2000m e app-bom com 50m/200m.
+      O mesmo teto de segurança pode ser atingido com Burstable -- a diferença é que não tranca recursos no scheduler.
+      Agora vamos olhar esses manifestos de verdade.
+    </aside>
+  </section>
+
+  <!-- MANIFESTOS -->
+  <section>
+    <h2>Os manifestos dos nossos apps</h2>
+    <div class="demo-indicator">DEMO -- Abrir terminal</div>
+    <div class="demo-links">
+      <a class="demo-btn orange" href="https://console-openshift-console.__CLUSTER_DOMAIN__/terminal" target="_blank">Abrir Web Terminal</a>
+    </div>
+    <div class="two-col" style="margin-top:20px;">
+      <div>
+        <h3 style="color:#f44336">app-ruim</h3>
+        <pre><code class="yaml">resources:
+  requests:
+    cpu: "2"
+    memory: 2Gi
+  limits:
+    cpu: "2"
+    memory: 2Gi</code></pre>
+        <p style="font-size:0.75em;color:#f44336">QoS: Guaranteed | HPA: morto</p>
+      </div>
+      <div>
+        <h3 style="color:#4caf50">app-bom</h3>
+        <pre><code class="yaml">resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi</code></pre>
+        <p style="font-size:0.75em;color:#4caf50">QoS: Burstable | HPA: funcional</p>
+      </div>
+    </div>
+    <aside class="notes">
+      Vamos olhar no terminal. Dois namespaces: app-ruim e app-bom. Mesma aplicação, mesma imagem. A única diferença são os recursos.
+      Executar: oc get deployment stress-app -n app-ruim -o yaml | grep -A 8 resources
+      E depois: oc get deployment stress-app -n app-bom -o yaml | grep -A 8 resources
+    </aside>
+  </section>
+
+  <!-- RESOURCE DASHBOARD -->
+  <section>
+    <h2>Vendo no Resource Dashboard</h2>
+    <div class="demo-indicator">DEMO -- Abrir Resource Dashboard</div>
+    <div class="demo-links">
+      <a class="demo-btn green" href="https://resource-dashboard-demo-dashboard.__CLUSTER_DOMAIN__" target="_blank">Abrir Resource Dashboard</a>
+    </div>
+    <ul style="margin-top:20px;">
+      <li><span style="color:#f44336">Lado esquerdo (vermelho)</span>: app-ruim -- uso real ~0%, requests ocupam tudo</li>
+      <li><span style="color:#4caf50">Lado direito (verde)</span>: app-bom -- proporção saudável</li>
+      <li>HPA do app-ruim: 0% de CPU. Target 70% = 1400m. <strong>Nunca vai disparar.</strong></li>
+      <li>HPA do app-bom: 2% de CPU. Target 70% = 35m. <strong>Vai funcionar.</strong></li>
+    </ul>
+    <aside class="notes">
+      Abrir o Resource Dashboard. Mostrar os dois lados.
+      Apontar para o CPU atual dos dois: 0% no ruim, 2% no bom.
+      Explicar: os dois consomem o mesmo CPU absoluto em idle (~1m). A diferença é o denominador.
+      1m / 2000m = 0%. 1m / 50m = 2%. O HPA trabalha com essa porcentagem.
+      Com isso, vocês já entendem o cenário todo. Vamos agora para o autoscaling: como ajustar dinamicamente.
     </aside>
   </section>
 
@@ -1437,156 +1574,9 @@
       O VPA muda os requests, e o HPA usa os requests como base de cálculo.
       A abordagem recomendada: use o VPA para encontrar os valores corretos de right-sizing,
       aplique no Deployment, e depois configure o HPA para elasticidade horizontal.
-      Vamos demonstrar o VPA na prática com o nosso workload-simulator mais adiante.
-      Agora, voltando à teoria: vamos entender como o OpenShift aplica tudo isso internamente.
-    </aside>
-  </section>
-
-  <section>
-    <h2>Scheduler vs Runtime</h2>
-    <div class="two-col">
-      <div>
-        <h3><span class="badge-blue">Scheduler</span></h3>
-        <ul>
-          <li>Decide <strong>onde</strong> o pod roda</li>
-          <li>Olha os <strong>requests</strong></li>
-          <li>Requests = <strong>reserva</strong></li>
-          <li>Não sabe o uso real</li>
-        </ul>
-      </div>
-      <div>
-        <h3><span class="badge-yellow">Runtime (kubelet)</span></h3>
-        <ul>
-          <li>Controla <strong>o consumo</strong></li>
-          <li>Olha os <strong>limits</strong></li>
-          <li>Limits = <strong>teto</strong></li>
-          <li>Usa cgroups para impor</li>
-        </ul>
-      </div>
-    </div>
-    <aside class="notes">
-      Acabamos de ver requests, limits e overcommit. Mas em que momento cada um atua?
-      São dois momentos distintos. Primeiro, o Scheduler -- ele olha os requests e decide em qual nó colocar o pod.
-      Segundo, o Runtime -- kubelet e cgroups. Depois que o pod está rodando, quem controla o consumo real é o kubelet.
-      Se o pod ultrapassar o limit de CPU, é throttled. Se ultrapassar memória, é OOMKilled.
-    </aside>
-  </section>
-
-  <section>
-    <h2>CPU vs Memória</h2>
-    <table>
-      <thead><tr><th>Aspecto</th><th>CPU</th><th>Memória</th></tr></thead>
-      <tbody>
-        <tr><td>Tipo</td><td><span class="badge-green">Compressível</span></td><td><span class="badge-red">Incompressível</span></td></tr>
-        <tr><td>No limit</td><td>Throttling (mais lento)</td><td>OOMKill (morto)</td></tr>
-        <tr><td>Pod sobrevive?</td><td>Sim</td><td>Não</td></tr>
-        <tr><td>Kernel toma de volta?</td><td>Sim, reduz ciclos</td><td>Não, mata o processo</td></tr>
-        <tr><td>Impacto no usuário</td><td>Latência maior</td><td>Erro 500 / conexão perdida</td></tr>
-      </tbody>
-    </table>
-    <aside class="notes">
-      CPU é compressível -- o kernel limita ciclos sem matar. O pod fica lento mas continua vivo.
-      Memória é incompressível -- uma vez alocada, o kernel não toma de volta sem matar.
-      Essa diferença é crítica para entender por que o HPA funciona para CPU mas não para memória.
-    </aside>
-  </section>
-
-  <section>
-    <h2>Requests, Limits e QoS</h2>
-    <table>
-      <thead><tr><th></th><th>Guaranteed</th><th>Burstable</th><th>BestEffort</th></tr></thead>
-      <tbody>
-        <tr><td>Configuração</td><td>req = limit</td><td>req &lt; limit</td><td>nenhum</td></tr>
-        <tr><td>Burst?</td><td>Não</td><td>Sim</td><td>Ilimitado</td></tr>
-        <tr><td>Eviction</td><td>Último</td><td>Médio</td><td>Primeiro</td></tr>
-        <tr><td>Ideal para</td><td>DB, Kafka</td><td>Microsserviços</td><td>Jobs descartáveis</td></tr>
-        <tr><td>HPA funciona?</td><td>Quase impossível</td><td>Sim</td><td>N/A</td></tr>
-      </tbody>
-    </table>
-    <div class="key-message fragment">
-      Guaranteed não significa "garante mais recursos". Significa que o pod tem um contrato fixo --
-      nunca consome mais nem menos. Em troca, é o último a ser removido sob pressão.
-    </div>
-    <aside class="notes">
-      O Kubernetes atribui automaticamente uma classe de QoS baseada na relação entre requests e limits.
-      Guaranteed tranca recursos. Burstable permite burst. Para microsserviços, Burstable é quase sempre o caminho certo.
-      Analogia: Guaranteed é reservar uma mesa de 10 lugares para jantar sozinho.
-      Burstable é reservar 1 lugar e usar as cadeiras ao lado se estiverem vazias.
-    </aside>
-  </section>
-
-  <section>
-    <h2>Comparação direta</h2>
-    <table>
-      <thead><tr><th>Aspecto</th><th style="color:#f44336">Guaranteed (2000m/2000m)</th><th style="color:#4caf50">Burstable (50m/200m)</th></tr></thead>
-      <tbody>
-        <tr><td>Reserva no scheduler</td><td>2000m (2 vCPUs)</td><td>50m</td></tr>
-        <tr><td>Máximo que pode usar</td><td>2000m</td><td>200m</td></tr>
-        <tr><td>Pods num node 8 vCPU</td><td>~4</td><td>~160</td></tr>
-        <tr><td>CPU desperdiçada idle</td><td>~1995m trancados</td><td>~45m trancados</td></tr>
-        <tr><td>HPA funciona?</td><td>Quase impossível</td><td>Sim</td></tr>
-      </tbody>
-    </table>
-    <aside class="notes">
-      Esses são exatamente os nossos dois apps de demonstração. app-ruim com 2000m/2000m e app-bom com 50m/200m.
-      O mesmo teto de segurança pode ser atingido com Burstable -- a diferença é que não tranca recursos no scheduler.
-    </aside>
-  </section>
-
-  <section>
-    <h2>Os manifestos dos nossos apps</h2>
-    <div class="demo-indicator">DEMO -- Abrir terminal</div>
-    <div class="demo-links">
-      <a class="demo-btn orange" href="https://console-openshift-console.__CLUSTER_DOMAIN__/terminal" target="_blank">Abrir Web Terminal</a>
-    </div>
-    <div class="two-col" style="margin-top:20px;">
-      <div>
-        <h3 style="color:#f44336">app-ruim</h3>
-        <pre><code class="yaml">resources:
-  requests:
-    cpu: "2"
-    memory: 2Gi
-  limits:
-    cpu: "2"
-    memory: 2Gi</code></pre>
-        <p style="font-size:0.75em;color:#f44336">QoS: Guaranteed | HPA: morto</p>
-      </div>
-      <div>
-        <h3 style="color:#4caf50">app-bom</h3>
-        <pre><code class="yaml">resources:
-  requests:
-    cpu: 50m
-    memory: 128Mi
-  limits:
-    cpu: 200m
-    memory: 256Mi</code></pre>
-        <p style="font-size:0.75em;color:#4caf50">QoS: Burstable | HPA: funcional</p>
-      </div>
-    </div>
-    <aside class="notes">
-      Vamos olhar no terminal. Dois namespaces: app-ruim e app-bom. Mesma aplicação, mesma imagem. A única diferença são os recursos.
-      Executar: oc get deployment stress-app -n app-ruim -o yaml | grep -A 8 resources
-      E depois: oc get deployment stress-app -n app-bom -o yaml | grep -A 8 resources
-    </aside>
-  </section>
-
-  <section>
-    <h2>Vendo no Resource Dashboard</h2>
-    <div class="demo-indicator">DEMO -- Abrir Resource Dashboard</div>
-    <div class="demo-links">
-      <a class="demo-btn green" href="https://resource-dashboard-demo-dashboard.__CLUSTER_DOMAIN__" target="_blank">Abrir Resource Dashboard</a>
-    </div>
-    <ul style="margin-top:20px;">
-      <li><span style="color:#f44336">Lado esquerdo (vermelho)</span>: app-ruim -- uso real ~0%, requests ocupam tudo</li>
-      <li><span style="color:#4caf50">Lado direito (verde)</span>: app-bom -- proporção saudável</li>
-      <li>HPA do app-ruim: 0% de CPU. Target 70% = 1400m. <strong>Nunca vai disparar.</strong></li>
-      <li>HPA do app-bom: 2% de CPU. Target 70% = 35m. <strong>Vai funcionar.</strong></li>
-    </ul>
-    <aside class="notes">
-      Abrir o Resource Dashboard. Mostrar os dois lados.
-      Apontar para o CPU atual dos dois: 0% no ruim, 2% no bom.
-      Explicar: os dois consomem o mesmo CPU absoluto em idle (~1m). A diferença é o denominador.
-      1m / 2000m = 0%. 1m / 50m = 2%. O HPA trabalha com essa porcentagem.
+      Vamos demonstrar o VPA na prática com o nosso workload-simulator na Parte 3.
+      Agora que cobrimos os fundamentos -- requests, limits, overcommit, scheduler, QoS, HPA e VPA --
+      vamos para a parte prática: autoscaling ao vivo.
     </aside>
   </section>
 </section>
@@ -1604,6 +1594,32 @@
       <a class="demo-btn red"   href="https://stress-app-app-ruim.__CLUSTER_DOMAIN__" target="_blank">Abrir Stress App (app-ruim)</a>
       <a class="demo-btn blue"  href="https://resource-dashboard-demo-dashboard.__CLUSTER_DOMAIN__" target="_blank">Abrir Dashboard</a>
     </div>
+    <aside class="notes">
+      Acabamos de ver toda a teoria: requests, limits, overcommit, scheduler, QoS, HPA e VPA.
+      Agora é hora de provar que tudo isso funciona na prática.
+      Temos três demonstrações: HPA com carga, OOMKill com memória e VPA com simulador.
+    </aside>
+  </section>
+
+  <!-- HPA AO VIVO -->
+  <section>
+    <h2>A fórmula do HPA na prática</h2>
+    <pre style="font-size:0.9em;text-align:center;background:#222;padding:20px;border-radius:8px;"><code>réplicas = ceil( atuais x (métrica_atual / métrica_target) )</code></pre>
+    <table style="margin-top:20px;">
+      <thead><tr><th>Cenário</th><th>Request</th><th>Uso real</th><th>%</th><th>HPA dispara?</th></tr></thead>
+      <tbody>
+        <tr style="color:#4caf50"><td>app-bom</td><td>50m</td><td>80m</td><td>160%</td><td>Sim (3 réplicas)</td></tr>
+        <tr style="color:#f44336"><td>app-ruim</td><td>2000m</td><td>80m</td><td>4%</td><td>Não</td></tr>
+      </tbody>
+    </table>
+    <div class="key-message fragment">
+      O request é o denominador da fórmula. Se é gigante, a porcentagem nunca sobe. Vamos comprovar agora.
+    </div>
+    <aside class="notes">
+      Antes de gerar carga, vamos relembrar a fórmula. O HPA calcula: uso atual dividido pelo request.
+      Com request de 50m, 80m de uso dá 160% -- escala para 3 réplicas. Com 2000m, dá 4% -- nada acontece.
+      Vamos verificar isso ao vivo.
+    </aside>
   </section>
 
   <section>
@@ -1650,10 +1666,11 @@
     <aside class="notes">
       Mesma coisa no app-ruim. Mesma carga, mas o request é 2000m.
       A porcentagem de CPU nunca chega perto de 70% (que seria 1400m!).
-      O HPA está efetivamente morto.
+      O HPA está efetivamente morto. É exatamente o que mostramos na animação: HPA depende de requests corretos.
     </aside>
   </section>
 
+  <!-- OOMKILL -->
   <section>
     <h2>OOMKill -- Limits de Memória</h2>
     <div class="demo-indicator">DEMO -- Stress App</div>
@@ -1671,6 +1688,51 @@
       No app-ruim, limit de 2Gi. Clicar em +64MB repetidamente até estourar.
       No app-bom, limit de 256Mi. Mostrar que com menos alocação já fica na zona vermelha.
       O ponto: limits protegem o node. Requests dimensionados corretamente + limits com margem = configuração ideal.
+      Lembrem: CPU é compressível (throttle), memória é incompressível (OOMKill). Por isso HPA para memória não funciona.
+    </aside>
+  </section>
+
+  <!-- VPA AO VIVO -->
+  <section>
+    <h2>VPA na prática -- Simulador de Carga</h2>
+    <div class="demo-indicator">DEMO -- Abrir Simulador de Carga</div>
+    <div class="demo-links">
+      <a class="demo-btn blue" href="https://workload-simulator-vpa-demo.__CLUSTER_DOMAIN__" target="_blank">Abrir Simulador de Carga</a>
+    </div>
+    <ul style="margin-top:20px;">
+      <li>Aplicação rodando há dias com carga oscilante</li>
+      <li>60 min pico (~65 usuários) + 60 min fora de pico (~10 usuários)</li>
+      <li>VPA em modo <strong>Off</strong> -- apenas observando</li>
+      <li>Configurada com 1000m CPU / 1Gi memória (propositalmente inflado)</li>
+    </ul>
+    <aside class="notes">
+      Vimos o HPA ao vivo. Agora vamos ver o VPA.
+      Abrir o Simulador de Carga. Mostrar o gráfico oscilando.
+      A aplicação simula um cenário real: horário comercial com pico e fora de pico.
+      O VPA está observando e gerando recomendações.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Recomendações do VPA</h2>
+    <div class="demo-indicator">DEMO -- Terminal: oc describe vpa</div>
+    <div class="demo-links">
+      <a class="demo-btn orange" href="https://console-openshift-console.__CLUSTER_DOMAIN__/terminal" target="_blank">Web Terminal</a>
+    </div>
+    <table style="margin-top:20px;">
+      <thead><tr><th>Campo</th><th>Significado</th><th>Uso prático</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Target</strong></td><td>Valor ideal (p90)</td><td>Use como <strong>requests</strong></td></tr>
+        <tr><td><strong>Lower Bound</strong></td><td>Mínimo seguro</td><td>Nunca vá abaixo disso</td></tr>
+        <tr><td><strong>Upper Bound</strong></td><td>Picos observados</td><td>Referência para <strong>limits</strong></td></tr>
+        <tr><td><strong>Uncapped Target</strong></td><td>Target sem restrições</td><td>Diagnóstico do resourcePolicy</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Usar o botão Copiar no Simulador de Carga ou executar diretamente:
+      oc describe vpa vpa-workload-simulator -n vpa-demo | grep -A 20 "Container Recommendations"
+      Comparar os valores recomendados com os 1000m/1Gi configurados.
+      O Target mostra onde deveriam estar os requests. A diferença entre o configurado e o recomendado é o desperdício.
     </aside>
   </section>
 </section>
@@ -1687,6 +1749,11 @@
       <a class="demo-btn orange" href="https://console-openshift-console.__CLUSTER_DOMAIN__/terminal" target="_blank">Web Terminal</a>
       <a class="demo-btn blue"   href="https://console-openshift-console.__CLUSTER_DOMAIN__/monitoring/dashboards" target="_blank">Observe &gt; Dashboards</a>
     </div>
+    <aside class="notes">
+      Mostramos o problema, explicamos a teoria, comprovamos na prática.
+      Agora a pergunta é: como vocês vão identificar esse desperdício no dia a dia?
+      A resposta está nas ferramentas de observabilidade nativas do OpenShift.
+    </aside>
   </section>
 
   <section>
@@ -1734,150 +1801,15 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
 </section>
 
 <!-- ============================================================ -->
-<!-- PART 5 - HPA -->
+<!-- PART 5 - BOAS PRÁTICAS -->
 <!-- ============================================================ -->
 <section>
   <section>
-    <h2>HPA -- Horizontal Pod Autoscaler</h2>
-    <p style="color:#999;">Conceitos-chave</p>
-  </section>
-
-  <section>
-    <h2>A fórmula do HPA</h2>
-    <pre style="font-size:0.9em;text-align:center;background:#222;padding:20px;border-radius:8px;"><code>réplicas = ceil( atuais x (métrica_atual / métrica_target) )</code></pre>
-    <table style="margin-top:20px;">
-      <thead><tr><th>Cenário</th><th>Request</th><th>Uso real</th><th>%</th><th>HPA dispara?</th></tr></thead>
-      <tbody>
-        <tr style="color:#4caf50"><td>app-bom</td><td>50m</td><td>80m</td><td>160%</td><td>Sim (3 réplicas)</td></tr>
-        <tr style="color:#f44336"><td>app-ruim</td><td>2000m</td><td>80m</td><td>4%</td><td>Não</td></tr>
-      </tbody>
-    </table>
-    <div class="key-message fragment">
-      O request é o denominador. Se é gigante, a porcentagem nunca sobe.
-    </div>
+    <h2>Parte 5 -- Boas Práticas</h2>
     <aside class="notes">
-      A fórmula é simples: uso dividido por request = porcentagem.
-      O HPA calcula sobre o request, NÃO sobre o limit.
-      Com request de 50m, 80m de uso dá 160%. Com request de 2000m, dá 4%.
+      Vimos o problema, entendemos a teoria, comprovamos na prática, e sabemos como monitorar.
+      Agora vamos consolidar tudo em regras claras que vocês podem aplicar amanhã.
     </aside>
-  </section>
-
-  <section>
-    <h2>Por que NÃO usar HPA para memória?</h2>
-    <ol>
-      <li>Carga sobe &rarr; pod aloca memória &rarr; HPA escala</li>
-      <li>Carga diminui &rarr; pods <strong>não liberam memória</strong> (GC não devolve ao SO)</li>
-      <li>HPA calcula que ainda precisa das réplicas (% continua alta)</li>
-      <li>Réplicas nunca são removidas &rarr; HPA <strong>travado</strong></li>
-    </ol>
-    <div class="key-message fragment">
-      CPU é compressível -- o kernel faz throttle e libera. Funciona com HPA.<br>
-      Memória é incompressível -- uma vez alocada, não volta. Use VPA.
-    </div>
-    <aside class="notes">
-      Memória é incompressível. O garbage collector não devolve memória ao SO quando a carga diminui.
-      Por isso o HPA para memória fica travado -- as réplicas nunca são removidas.
-      Para memória, a solução é o VPA.
-    </aside>
-  </section>
-</section>
-
-<!-- ============================================================ -->
-<!-- PART 5B - VPA -->
-<!-- ============================================================ -->
-<section>
-  <section>
-    <h2>Parte 5 -- VPA</h2>
-    <h3>Descobrindo os valores certos</h3>
-    <p style="color:#999;">~15 minutos</p>
-  </section>
-
-  <section>
-    <h2>O que é o VPA</h2>
-    <div class="key-message">
-      O VPA observa o comportamento real da aplicação ao longo de dias e <strong>recomenda</strong>
-      os valores ideais de CPU e memória. Transforma o "chute" em decisão baseada em dados.
-    </div>
-    <table style="margin-top:20px;">
-      <thead><tr><th>Componente</th><th>Função</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Recommender</strong></td><td>Calcula recomendações baseado em métricas</td></tr>
-        <tr><td><strong>Updater</strong></td><td>Marca pods para reinício (modos Auto/Recreate)</td></tr>
-        <tr><td><strong>Admission Controller</strong></td><td>Injeta valores em novos pods</td></tr>
-      </tbody>
-    </table>
-    <aside class="notes">
-      O VPA responde a pergunta: qual o valor certo?
-      Em vez de chutar requests e limits, você coleta dados reais por dias e usa as recomendações.
-    </aside>
-  </section>
-
-  <section>
-    <h2>Simulador de Carga</h2>
-    <div class="demo-indicator">DEMO -- Abrir Simulador de Carga</div>
-    <div class="demo-links">
-      <a class="demo-btn blue" href="https://workload-simulator-vpa-demo.__CLUSTER_DOMAIN__" target="_blank">Abrir Simulador de Carga</a>
-    </div>
-    <ul style="margin-top:20px;">
-      <li>Aplicação rodando há dias com carga oscilante</li>
-      <li>60 min pico (~65 usuários) + 60 min fora de pico (~10 usuários)</li>
-      <li>VPA em modo <strong>Off</strong> -- apenas observando</li>
-      <li>Configurada com 1000m CPU / 1Gi memória (propositalmente inflado)</li>
-    </ul>
-    <aside class="notes">
-      Abrir o Simulador de Carga. Mostrar o gráfico oscilando.
-      Depois, no terminal, mostrar os resources atuais e as recomendações do VPA.
-    </aside>
-  </section>
-
-  <section>
-    <h2>Recomendações do VPA</h2>
-    <div class="demo-indicator">DEMO -- Terminal: oc describe vpa</div>
-    <div class="demo-links">
-      <a class="demo-btn orange" href="https://console-openshift-console.__CLUSTER_DOMAIN__/terminal" target="_blank">Web Terminal</a>
-    </div>
-    <table style="margin-top:20px;">
-      <thead><tr><th>Campo</th><th>Significado</th><th>Uso prático</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Target</strong></td><td>Valor ideal (p90)</td><td>Use como <strong>requests</strong></td></tr>
-        <tr><td><strong>Lower Bound</strong></td><td>Mínimo seguro</td><td>Nunca vá abaixo disso</td></tr>
-        <tr><td><strong>Upper Bound</strong></td><td>Picos observados</td><td>Referência para <strong>limits</strong></td></tr>
-        <tr><td><strong>Uncapped Target</strong></td><td>Target sem restrições</td><td>Diagnóstico do resourcePolicy</td></tr>
-      </tbody>
-    </table>
-    <aside class="notes">
-      Usar o botão Copiar no Simulador de Carga ou executar diretamente:
-      oc describe vpa vpa-workload-simulator -n vpa-demo | grep -A 20 "Container Recommendations"
-      Comparar os valores recomendados com os 1000m/1Gi configurados.
-    </aside>
-  </section>
-
-  <section>
-    <h2>Modos do VPA</h2>
-    <table>
-      <thead><tr><th>Modo</th><th>Comportamento</th><th>Risco</th></tr></thead>
-      <tbody>
-        <tr><td><span class="badge-green">Off</span></td><td>Apenas recomenda</td><td>Zero</td></tr>
-        <tr><td><span class="badge-blue">Initial</span></td><td>Aplica em novos pods</td><td>Baixo</td></tr>
-        <tr><td><span class="badge-yellow">Auto</span></td><td>Aplica e reinicia pods</td><td>Médio (use PDB)</td></tr>
-      </tbody>
-    </table>
-    <div class="key-message fragment">
-      Comece sempre com Off. Colete dados por 7 dias. Analise. Depois avance.
-    </div>
-    <aside class="notes">
-      O VPA em modo Off é uma ferramenta de auditoria. Mostra onde está o desperdício sem alterar nada.
-      VPA + HPA se complementam: VPA descobre o tamanho certo, HPA escala horizontalmente com esses valores.
-    </aside>
-  </section>
-</section>
-
-<!-- ============================================================ -->
-<!-- PART 6 - BOAS PRÁTICAS -->
-<!-- ============================================================ -->
-<section>
-  <section>
-    <h2>Parte 6 -- Boas Práticas</h2>
   </section>
 
   <section>
@@ -1895,11 +1827,11 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
 </section>
 
 <!-- ============================================================ -->
-<!-- PART 7 - ROUTE VS SERVICE -->
+<!-- PART 6 - ROUTE VS SERVICE -->
 <!-- ============================================================ -->
 <section>
   <section>
-    <h2>Parte 7 -- Route vs Service</h2>
+    <h2>Parte 6 -- Route vs Service</h2>
     <h3>Comunicação interna</h3>
     <p style="color:#999;">~10 minutos</p>
     <div class="demo-indicator">DEMO INTERATIVA</div>
@@ -1907,6 +1839,11 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       <a class="demo-btn red"   href="https://stress-app-app-ruim.__CLUSTER_DOMAIN__" target="_blank">app-ruim (Via Route)</a>
       <a class="demo-btn green" href="https://stress-app-app-bom.__CLUSTER_DOMAIN__" target="_blank">app-bom (Via Service)</a>
     </div>
+    <aside class="notes">
+      Até aqui falamos de CPU e memória. Mas tem outro anti-pattern comum que impacta performance:
+      aplicações usando Routes para se comunicar entre si dentro do cluster.
+      Vamos demonstrar a diferença de latência.
+    </aside>
   </section>
 
   <section>
@@ -1943,11 +1880,11 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
 </section>
 
 <!-- ============================================================ -->
-<!-- PART 8 - GITOPS E POLICIES -->
+<!-- PART 7 - GITOPS E POLICIES -->
 <!-- ============================================================ -->
 <section>
   <section>
-    <h2>Parte 8 -- Protegendo o Cluster</h2>
+    <h2>Parte 7 -- Protegendo o Cluster</h2>
     <h3>GitOps + Policies</h3>
     <p style="color:#999;">~15 minutos</p>
     <div class="demo-links" style="margin-top:15px;">
@@ -1955,6 +1892,10 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       <a class="demo-btn dark"   href="https://multicloud-console.__CLUSTER_DOMAIN__" target="_blank">ACM Console</a>
       <a class="demo-btn orange" href="https://console-openshift-console.__CLUSTER_DOMAIN__/terminal" target="_blank">Web Terminal</a>
     </div>
+    <aside class="notes">
+      Sabemos como configurar corretamente. Mas como garantir que ninguém desfaça o trabalho?
+      A resposta está em três camadas de proteção: CI com Tekton, CD com ArgoCD, e governança com ACM Policies.
+    </aside>
   </section>
 
   <section>
@@ -2046,12 +1987,17 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
 </section>
 
 <!-- ============================================================ -->
-<!-- PART 9 - FECHAMENTO -->
+<!-- PART 8 - FECHAMENTO -->
 <!-- ============================================================ -->
 <section>
   <section>
     <h2>Fechamento</h2>
     <h3>Próximos passos</h3>
+    <aside class="notes">
+      Passamos por toda a jornada: entendemos o problema, aprendemos a teoria,
+      comprovamos na prática, monitoramos, e protegemos o cluster.
+      Vamos recapitular e falar de próximos passos concretos.
+    </aside>
   </section>
 
   <section>
