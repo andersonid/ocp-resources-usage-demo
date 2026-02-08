@@ -610,7 +610,225 @@
       No slide anterior, ainda usamos a infra inteira do nó. Se ocorrer um incidente como um bug de kernel, pode onerar o nó todo.
       Desse jeito, você cria máquinas virtuais específicas e customizadas, e coloca suas aplicações ali.
       É onde entra o Kubernetes e o OpenShift -- orquestrando tudo isso: recursos computacionais, nós, containers.
-      E é exatamente sobre como configurar corretamente esses recursos que vamos falar agora.
+      Mas o orquestrador não adivinha de quanto cada aplicação precisa. Alguém precisa dizer isso.
+      E é exatamente sobre como declarar e controlar esses recursos que vamos falar agora: Requests e Limits.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- REQUESTS E LIMITS -->
+<!-- ============================================================ -->
+<section>
+  <section class="center">
+    <h2>Requests e Limits</h2>
+    <h3>Como o Kubernetes gerencia recursos</h3>
+    <aside class="notes">
+      Então eu contei toda essa história para embasar as demandas por recursos computacionais.
+      Agora que entendemos como evoluímos de bare metal até containers orquestrados, a pergunta é:
+      como o Kubernetes decide quanto de CPU e memória cada container pode usar?
+      A resposta está em dois conceitos fundamentais: Requests e Limits.
+    </aside>
+  </section>
+
+  <!-- REQUESTS -->
+  <section class="center">
+    <h3 style="margin-bottom:20px; color:#999;">Requests -- A reserva para o Scheduler</h3>
+    <div style="display:flex; align-items:center; justify-content:center; gap:40px; margin-top:10px;">
+
+      <!-- Pod -->
+      <div class="fragment fade-right" data-fragment-index="1" style="text-align:center;">
+        <div style="border:3px solid #ff9800; border-radius:12px; padding:15px 20px; background:rgba(255,152,0,0.08);">
+          <div style="border:2px dashed #ff9800; border-radius:8px; padding:12px 18px;">
+            <div style="font-size:1.6em;">&#9881;</div>
+            <div style="font-size:0.75em; color:#ff9800; font-weight:bold;">CONTAINER</div>
+          </div>
+          <div style="font-size:0.9em; font-weight:bold; color:#fff; margin-top:8px;">POD</div>
+        </div>
+      </div>
+
+      <!-- Seta -->
+      <div class="fragment fade-in" data-fragment-index="2" style="font-size:1.5em; color:#999;">&#10132;</div>
+
+      <!-- Barras CPU e Memory -->
+      <div class="fragment fade-left" data-fragment-index="2" style="display:flex; gap:30px;">
+        <!-- CPU -->
+        <div style="text-align:center;">
+          <div style="width:60px; height:180px; border:3px solid #42a5f5; border-radius:6px; position:relative; overflow:hidden; background:rgba(66,165,245,0.05);">
+            <!-- Marcas laterais -->
+            <div style="position:absolute; right:-18px; top:10%; font-size:0.45em; color:#666;">&#9472;</div>
+            <div style="position:absolute; right:-18px; top:30%; font-size:0.45em; color:#666;">&#9472;</div>
+            <div style="position:absolute; right:-18px; top:50%; font-size:0.45em; color:#666;">&#9472;</div>
+            <div style="position:absolute; right:-18px; top:70%; font-size:0.45em; color:#666;">&#9472;</div>
+            <!-- Request level -->
+            <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:0; left:0; right:0; height:35%; background:linear-gradient(0deg,#1565c0,#42a5f5); opacity:0.8;"></div>
+            <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:33%; left:-5px; right:-5px; border-top:3px dashed #fff; z-index:2;"></div>
+            <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:36%; right:-70px; font-size:0.6em; color:#42a5f5; font-weight:bold; white-space:nowrap;">&#8592; request: 100m</div>
+          </div>
+          <div style="font-size:0.85em; font-weight:bold; color:#42a5f5; margin-top:8px;">CPU</div>
+        </div>
+        <!-- Memory -->
+        <div style="text-align:center;">
+          <div style="width:60px; height:180px; border:3px solid #ab47bc; border-radius:6px; position:relative; overflow:hidden; background:rgba(171,71,188,0.05);">
+            <div style="position:absolute; right:-18px; top:10%; font-size:0.45em; color:#666;">&#9472;</div>
+            <div style="position:absolute; right:-18px; top:30%; font-size:0.45em; color:#666;">&#9472;</div>
+            <div style="position:absolute; right:-18px; top:50%; font-size:0.45em; color:#666;">&#9472;</div>
+            <div style="position:absolute; right:-18px; top:70%; font-size:0.45em; color:#666;">&#9472;</div>
+            <!-- Request level -->
+            <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:0; left:0; right:0; height:30%; background:linear-gradient(0deg,#7b1fa2,#ab47bc); opacity:0.8;"></div>
+            <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:28%; left:-5px; right:-5px; border-top:3px dashed #fff; z-index:2;"></div>
+            <div class="fragment fade-in" data-fragment-index="3" style="position:absolute; bottom:31%; right:-80px; font-size:0.6em; color:#ab47bc; font-weight:bold; white-space:nowrap;">&#8592; request: 128Mi</div>
+          </div>
+          <div style="font-size:0.85em; font-weight:bold; color:#ab47bc; margin-top:8px;">MEMORY</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explicação -->
+    <div class="fragment fade-up" data-fragment-index="4" style="max-width:650px; margin:25px auto 0; text-align:center;">
+      <div class="key-message" style="text-align:left;">
+        O <strong>request</strong> diz ao Scheduler: "minha aplicação precisa de pelo menos isso para funcionar."<br>
+        O Scheduler usa esse valor para decidir <strong>em qual nó</strong> colocar o pod.<br>
+        <span style="color:#f44336;">Request alto demais</span> = nó "cheio" no papel, ocioso na prática.<br>
+        <span style="color:#4caf50;">Request baixo demais</span> = muitos pods no mesmo nó, contenção de recursos.
+      </div>
+    </div>
+    <aside class="notes">
+      Primeira coisa: os Requests. O que são? É você dizer ao OpenShift quanto a sua aplicação precisa para funcionar.
+      Funciona como uma reserva -- mas não é bem uma garantia. O scheduler vai tentar colocar a aplicação num nó que tenha
+      pelo menos esse valor disponível. Se a app usar menos, os recursos restantes podem ser usados por outros pods.
+      Se você coloca um request muito baixo, muitas apps acabam no mesmo nó e competem. Se coloca muito alto, subutiliza o cluster.
+      O scheduler do Kubernetes é 100% baseado nos requests.
+    </aside>
+  </section>
+
+  <!-- LIMITS -->
+  <section class="center">
+    <h3 style="margin-bottom:20px; color:#999;">Limits -- O teto máximo</h3>
+    <div style="display:flex; align-items:center; justify-content:center; gap:40px; margin-top:10px;">
+
+      <!-- Pod -->
+      <div style="text-align:center;">
+        <div style="border:3px solid #ff9800; border-radius:12px; padding:15px 20px; background:rgba(255,152,0,0.08);">
+          <div style="border:2px dashed #ff9800; border-radius:8px; padding:12px 18px;">
+            <div style="font-size:1.6em;">&#9881;</div>
+            <div style="font-size:0.75em; color:#ff9800; font-weight:bold;">CONTAINER</div>
+          </div>
+          <div style="font-size:0.9em; font-weight:bold; color:#fff; margin-top:8px;">POD</div>
+        </div>
+      </div>
+
+      <!-- Seta -->
+      <div style="font-size:1.5em; color:#999;">&#10132;</div>
+
+      <!-- Barras CPU e Memory com request + limit -->
+      <div style="display:flex; gap:30px;">
+        <!-- CPU -->
+        <div style="text-align:center;">
+          <div style="width:60px; height:180px; border:3px solid #42a5f5; border-radius:6px; position:relative; overflow:hidden; background:rgba(66,165,245,0.05);">
+            <!-- Request -->
+            <div style="position:absolute; bottom:0; left:0; right:0; height:35%; background:linear-gradient(0deg,#1565c0,#42a5f5); opacity:0.6;"></div>
+            <div style="position:absolute; bottom:33%; left:-5px; right:-5px; border-top:2px dashed rgba(255,255,255,0.5); z-index:2;"></div>
+            <div style="position:absolute; bottom:35%; right:-70px; font-size:0.5em; color:#90caf9; white-space:nowrap;">&#8592; request: 100m</div>
+            <!-- Limit (burst zone) -->
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:35%; left:0; right:0; height:30%; background:repeating-linear-gradient(45deg, rgba(66,165,245,0.3), rgba(66,165,245,0.3) 5px, rgba(66,165,245,0.1) 5px, rgba(66,165,245,0.1) 10px);"></div>
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:63%; left:-5px; right:-5px; border-top:3px solid #f44336; z-index:2;"></div>
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:66%; right:-65px; font-size:0.55em; color:#f44336; font-weight:bold; white-space:nowrap;">&#8592; limit: 200m</div>
+          </div>
+          <div style="font-size:0.85em; font-weight:bold; color:#42a5f5; margin-top:8px;">CPU</div>
+          <div class="fragment fade-in" data-fragment-index="2" style="font-size:0.6em; color:#ff9800; margin-top:4px;">Acima do limit:<br><strong>Throttling</strong></div>
+        </div>
+        <!-- Memory -->
+        <div style="text-align:center;">
+          <div style="width:60px; height:180px; border:3px solid #ab47bc; border-radius:6px; position:relative; overflow:hidden; background:rgba(171,71,188,0.05);">
+            <!-- Request -->
+            <div style="position:absolute; bottom:0; left:0; right:0; height:30%; background:linear-gradient(0deg,#7b1fa2,#ab47bc); opacity:0.6;"></div>
+            <div style="position:absolute; bottom:28%; left:-5px; right:-5px; border-top:2px dashed rgba(255,255,255,0.5); z-index:2;"></div>
+            <div style="position:absolute; bottom:30%; right:-80px; font-size:0.5em; color:#ce93d8; white-space:nowrap;">&#8592; request: 128Mi</div>
+            <!-- Limit -->
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:30%; left:0; right:0; height:30%; background:repeating-linear-gradient(45deg, rgba(171,71,188,0.3), rgba(171,71,188,0.3) 5px, rgba(171,71,188,0.1) 5px, rgba(171,71,188,0.1) 10px);"></div>
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:58%; left:-5px; right:-5px; border-top:3px solid #f44336; z-index:2;"></div>
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:61%; right:-75px; font-size:0.55em; color:#f44336; font-weight:bold; white-space:nowrap;">&#8592; limit: 256Mi</div>
+          </div>
+          <div style="font-size:0.85em; font-weight:bold; color:#ab47bc; margin-top:8px;">MEMORY</div>
+          <div class="fragment fade-in" data-fragment-index="2" style="font-size:0.6em; color:#f44336; margin-top:4px;">Acima do limit:<br><strong>OOMKill</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zona de burst -->
+    <div class="fragment fade-up" data-fragment-index="3" style="max-width:650px; margin:20px auto 0; text-align:center;">
+      <div class="key-message" style="text-align:left;">
+        O <strong>limit</strong> é o teto: até onde a aplicação pode chegar em picos de uso.<br>
+        A zona entre request e limit é a <strong>zona de burst</strong> -- recursos que a app pode usar se estiverem disponíveis no nó.<br>
+        <span style="color:#42a5f5;">CPU</span>: ultrapassou o limit? <strong>Throttling</strong> -- fica lenta, mas viva.<br>
+        <span style="color:#ab47bc;">Memória</span>: ultrapassou o limit? <strong>OOMKill</strong> -- pod morto e reiniciado.
+      </div>
+    </div>
+    <aside class="notes">
+      E aí vem o Limits. O limit é até onde a sua aplicação pode chegar.
+      Se eu tinha 100m de request, posso colocar 200m de limit. Em um momento de pico, a aplicação pode usar até 200m
+      e depois voltar ao normal. Isso consome recursos que outra aplicação não estava usando naquele momento.
+      Por isso é importante frisar: o request não é uma reserva fixa -- é o mínimo garantido para o scheduler.
+      O limit é o teto real imposto pelo cgroup no kernel.
+      CPU é compressível -- ultrapassou, leva throttling, fica lenta. Memória é incompressível -- ultrapassou, OOMKill.
+    </aside>
+  </section>
+
+  <!-- OVERCOMMIT -->
+  <section class="center">
+    <h3 style="margin-bottom:20px; color:#999;">Overcommit -- Por que isso funciona</h3>
+    <div style="display:flex; align-items:flex-end; justify-content:center; gap:50px; margin-top:20px;">
+
+      <!-- Barra do Nó -->
+      <div style="text-align:center; position:relative;">
+        <div style="font-size:0.7em; color:#999; margin-bottom:8px;">Capacidade do Nó</div>
+        <div style="width:80px; height:260px; border:3px solid #999; border-radius:6px; position:relative; overflow:hidden; background:rgba(255,255,255,0.03);">
+          <!-- App A request -->
+          <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:0; left:0; right:0; height:20%; background:linear-gradient(0deg,#1565c0,#1e88e5); opacity:0.8;"></div>
+          <!-- App B request -->
+          <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:20%; left:0; right:0; height:15%; background:linear-gradient(0deg,#2e7d32,#43a047); opacity:0.8;"></div>
+          <!-- App C request -->
+          <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:35%; left:0; right:0; height:10%; background:linear-gradient(0deg,#e65100,#f57c00); opacity:0.8;"></div>
+          <!-- Linha da soma dos requests -->
+          <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:44%; left:-5px; right:-5px; border-top:3px dashed #fff; z-index:5;"></div>
+          <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:46%; left:-95px; font-size:0.55em; color:#fff; white-space:nowrap; font-weight:bold;">Requests &#8594;</div>
+          <!-- Burst zones (limits) -->
+          <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:0; left:0; right:0; height:40%; background:repeating-linear-gradient(45deg, rgba(66,165,245,0.15), rgba(66,165,245,0.15) 4px, transparent 4px, transparent 8px);"></div>
+          <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:20%; left:0; right:0; height:35%; background:repeating-linear-gradient(45deg, rgba(76,175,80,0.15), rgba(76,175,80,0.15) 4px, transparent 4px, transparent 8px);"></div>
+          <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:35%; left:0; right:0; height:40%; background:repeating-linear-gradient(45deg, rgba(255,152,0,0.15), rgba(255,152,0,0.15) 4px, transparent 4px, transparent 8px);"></div>
+          <!-- Linha que ultrapassa o nó (overcommit) -->
+          <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:74%; left:-5px; right:-5px; border-top:3px solid #f44336; z-index:5;"></div>
+          <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:76%; right:-80px; font-size:0.55em; color:#f44336; white-space:nowrap; font-weight:bold;">&#8592; Soma dos Limits<br><span style="font-size:0.85em;">(ultrapassa o nó)</span></div>
+        </div>
+      </div>
+
+      <!-- Legenda -->
+      <div class="fragment fade-in" data-fragment-index="1" style="text-align:left; font-size:0.75em;">
+        <div style="margin-bottom:12px;"><span style="display:inline-block; width:14px; height:14px; background:#1e88e5; border-radius:3px; vertical-align:middle; margin-right:8px;"></span> <strong>App A</strong> -- req: 100m, lim: 200m</div>
+        <div style="margin-bottom:12px;"><span style="display:inline-block; width:14px; height:14px; background:#43a047; border-radius:3px; vertical-align:middle; margin-right:8px;"></span> <strong>App B</strong> -- req: 80m, lim: 180m</div>
+        <div style="margin-bottom:12px;"><span style="display:inline-block; width:14px; height:14px; background:#f57c00; border-radius:3px; vertical-align:middle; margin-right:8px;"></span> <strong>App C</strong> -- req: 50m, lim: 200m</div>
+        <div class="fragment fade-in" data-fragment-index="3" style="margin-top:20px; border-left:3px solid #ff9800; padding-left:10px; color:#ff9800;">
+          Funciona porque nem todas<br>as apps usam o máximo<br>ao mesmo tempo.
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="4" style="max-width:650px; margin:20px auto 0; text-align:center;">
+      <div class="key-message" style="text-align:left;">
+        <strong>Overcommit de CPU</strong>: aceitável -- throttling é tolerável na maioria dos casos.<br>
+        <strong>Overcommit de memória</strong>: perigoso -- OOMKill é destrutivo. Seja conservador com limits de memória.<br>
+        A configuração ideal: <strong>requests realistas + limits com margem</strong> = cluster eficiente e seguro.
+      </div>
+    </div>
+    <aside class="notes">
+      E aí temos o conceito de Overcommit. A soma dos limits de todas as aplicações ultrapassa a capacidade real do nó.
+      Isso funciona porque nem todas as aplicações usam o máximo ao mesmo tempo. Um cron que roda de manhã,
+      outro job que roda à tarde -- os picos são distribuídos no tempo.
+      Para CPU, overcommit é aceitável. O scheduler controla por slices de tempo -- se ultrapassar, é throttling.
+      Para memória, overcommit é perigoso. Se uma app alocou memória, o kernel não toma de volta sem matar o processo.
+      A recomendação: requests realistas baseados no uso médio observado, limits com margem para picos.
+      E é exatamente isso que vamos demonstrar agora com nossos apps.
     </aside>
   </section>
 </section>
@@ -623,7 +841,8 @@
     <h2>Parte 1 -- O Problema Real</h2>
     <p style="color:#999;">~10 minutos</p>
     <aside class="notes">
-      Agora que contextualizamos a evolução, vamos falar do problema concreto que vemos no dia a dia dos clusters.
+      Agora que entendemos a teoria por trás de Requests, Limits e Overcommit, vamos ver na prática o problema real:
+      o que acontece quando as configurações estão erradas. Vamos abrir nossos apps de demonstração.
     </aside>
   </section>
 
