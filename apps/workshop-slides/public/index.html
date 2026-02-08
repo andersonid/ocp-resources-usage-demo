@@ -235,8 +235,90 @@
     </aside>
   </section>
 
+  <!-- SLIDE 3 - VIRTUALIZAÇÃO -->
   <section class="center">
-    <img src="images/03-virtualization.png" class="slide-img" alt="Virtualization">
+    <h3 style="margin-bottom:25px; color:#999;">Virtualização -- Isolamento com overhead</h3>
+    <div class="arch-stack" style="width:560px; margin:0 auto; position:relative;">
+
+      <!-- VMs com apps isoladas -->
+      <div class="fragment fade-up" data-fragment-index="4" style="position:relative; z-index:4;">
+        <div style="display:flex; gap:4px; margin-bottom:2px;">
+          <div style="flex:1; background:linear-gradient(135deg,#1565c0,#1e88e5); border-radius:10px 0 0 0; border:2px solid #42a5f5; padding:0; overflow:hidden;">
+            <div style="padding:6px; text-align:center; font-size:0.55em; color:#90caf9; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.15);">VM 1</div>
+            <div style="padding:8px 6px; text-align:center;">
+              <div style="font-size:1.3em;">&#9881;</div>
+              <div style="font-size:0.7em; font-weight:bold; color:#fff;">App A</div>
+              <div style="font-size:0.55em; color:#90caf9;">Libs + Guest OS</div>
+            </div>
+          </div>
+          <div style="flex:1; background:linear-gradient(135deg,#1565c0,#1e88e5); border:2px solid #42a5f5; padding:0; overflow:hidden;">
+            <div style="padding:6px; text-align:center; font-size:0.55em; color:#90caf9; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.15);">VM 2</div>
+            <div style="padding:8px 6px; text-align:center;">
+              <div style="font-size:1.3em;">&#9881;</div>
+              <div style="font-size:0.7em; font-weight:bold; color:#fff;">App B</div>
+              <div style="font-size:0.55em; color:#90caf9;">Libs + Guest OS</div>
+            </div>
+          </div>
+          <div style="flex:1; background:linear-gradient(135deg,#1565c0,#1e88e5); border-radius:0 10px 0 0; border:2px solid #42a5f5; padding:0; overflow:hidden;">
+            <div style="padding:6px; text-align:center; font-size:0.55em; color:#90caf9; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid rgba(255,255,255,0.15);">VM 3</div>
+            <div style="padding:8px 6px; text-align:center;">
+              <div style="font-size:1.3em;">&#9881;</div>
+              <div style="font-size:0.7em; font-weight:bold; color:#fff;">App C</div>
+              <div style="font-size:0.55em; color:#90caf9;">Libs + Guest OS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hypervisor -->
+      <div class="fragment fade-up" data-fragment-index="3">
+        <div style="background:linear-gradient(135deg,#e65100,#f57c00); padding:12px 20px; margin-bottom:2px; border:2px solid #ff9800; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.5em;">&#9000;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Hypervisor</div>
+            <div style="font-size:0.65em; color:#ffe0b2;">VMware, KVM, Hyper-V...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Host OS -->
+      <div class="fragment fade-up" data-fragment-index="2">
+        <div style="background:linear-gradient(135deg,#2e7d32,#43a047); padding:12px 20px; margin-bottom:2px; border:2px solid #66bb6a; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.5em;">&#128421;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Host Operating System</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure -->
+      <div class="fragment fade-up" data-fragment-index="1">
+        <div style="background:linear-gradient(135deg,#555,#777); border-radius:0 0 10px 10px; padding:12px 20px; border:2px solid #999; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.5em;">&#127981;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Infrastructure</div>
+            <div style="font-size:0.65em; color:#ccc;">CPU, RAM, Disco, Rede</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anotações -->
+      <div class="fragment fade-in" data-fragment-index="5" style="position:absolute; right:-240px; top:0; width:220px; text-align:left;">
+        <div style="font-size:0.7em; color:#4caf50; border-left:3px solid #4caf50; padding-left:10px;">
+          &#10003; Isolamento completo<br>
+          &#10003; Recursos limitados por VM<br>
+          &#10003; Cada app tem seu SO
+        </div>
+      </div>
+      <div class="fragment fade-in" data-fragment-index="6" style="position:absolute; left:-240px; top:0; width:220px; text-align:right;">
+        <div style="font-size:0.7em; color:#f44336; border-right:3px solid #f44336; padding-right:10px;">
+          &#9888; Overhead: SO em cima de SO<br>
+          &#9888; Hypervisor consome recursos<br>
+          &#9888; Boot lento, imagem pesada
+        </div>
+      </div>
+
+    </div>
     <aside class="notes">
       Qual foi a primeira solução que apareceu? Virtualização.
       Você passa a ter ambientes segregados, onde nesta máquina virtual você tem um sistema operacional e suas bibliotecas específicas para aquela aplicação.
@@ -246,8 +328,81 @@
     </aside>
   </section>
 
+  <!-- SLIDE 4 - CGROUPS -->
   <section class="center">
-    <img src="images/04-cgroups.png" class="slide-img" alt="cgroups">
+    <h3 style="margin-bottom:25px; color:#999;">cgroups -- Isolamento sem overhead de VM</h3>
+    <div class="arch-stack" style="width:560px; margin:0 auto; position:relative;">
+
+      <!-- Apps com cgroups -->
+      <div class="fragment fade-up" data-fragment-index="3" style="position:relative; z-index:3;">
+        <div style="display:flex; gap:4px; margin-bottom:2px;">
+          <div style="flex:1; border-radius:10px 0 0 0; border:2px dashed #ff9800; padding:0; overflow:hidden; background:rgba(230,81,0,0.15);">
+            <div style="padding:5px; text-align:center; font-size:0.5em; color:#ff9800; text-transform:uppercase; letter-spacing:1px;">cgroup 1</div>
+            <div style="padding:6px; text-align:center;">
+              <div style="font-size:1.3em;">&#9881;</div>
+              <div style="font-size:0.7em; font-weight:bold; color:#fff;">App A</div>
+            </div>
+          </div>
+          <div style="flex:1; border:2px dashed #ff9800; padding:0; overflow:hidden; background:rgba(230,81,0,0.15);">
+            <div style="padding:5px; text-align:center; font-size:0.5em; color:#ff9800; text-transform:uppercase; letter-spacing:1px;">cgroup 2</div>
+            <div style="padding:6px; text-align:center;">
+              <div style="font-size:1.3em;">&#9881;</div>
+              <div style="font-size:0.7em; font-weight:bold; color:#fff;">App B</div>
+            </div>
+          </div>
+          <div style="flex:1; border-radius:0 10px 0 0; border:2px dashed #ff9800; padding:0; overflow:hidden; background:rgba(230,81,0,0.15);">
+            <div style="padding:5px; text-align:center; font-size:0.5em; color:#ff9800; text-transform:uppercase; letter-spacing:1px;">cgroup 3</div>
+            <div style="padding:6px; text-align:center;">
+              <div style="font-size:1.3em;">&#9881;</div>
+              <div style="font-size:0.7em; font-weight:bold; color:#fff;">App C</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,#1565c0,#1e88e5); padding:8px; text-align:center; border:2px solid #42a5f5; margin-bottom:2px; font-size:0.75em; color:#90caf9;">
+          &#128218; Bibliotecas compartilhadas
+        </div>
+      </div>
+
+      <!-- Host OS com cgroups -->
+      <div class="fragment fade-up" data-fragment-index="2">
+        <div style="background:linear-gradient(135deg,#2e7d32,#43a047); padding:12px 20px; margin-bottom:2px; border:2px solid #66bb6a; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.5em;">&#128421;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Host Operating System</div>
+            <div style="font-size:0.65em; color:#c8e6c9;">Kernel Linux com suporte a cgroups</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure -->
+      <div class="fragment fade-up" data-fragment-index="1">
+        <div style="background:linear-gradient(135deg,#555,#777); border-radius:0 0 10px 10px; padding:12px 20px; border:2px solid #999; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.5em;">&#127981;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Infrastructure</div>
+            <div style="font-size:0.65em; color:#ccc;">Bare metal -- sem hypervisor</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anotações -->
+      <div class="fragment fade-in" data-fragment-index="4" style="position:absolute; right:-240px; top:0; width:220px; text-align:left;">
+        <div style="font-size:0.7em; color:#4caf50; border-left:3px solid #4caf50; padding-left:10px;">
+          &#10003; Limites de CPU e memória<br>
+          &#10003; Sem overhead de VM<br>
+          &#10003; Performance nativa<br>
+          &#10003; Base do Kubernetes!
+        </div>
+      </div>
+      <div class="fragment fade-in" data-fragment-index="5" style="position:absolute; left:-240px; top:0; width:220px; text-align:right;">
+        <div style="font-size:0.7em; color:#f44336; border-right:3px solid #f44336; padding-right:10px;">
+          &#9888; Bibliotecas compartilhadas<br>
+          &#9888; Update do SO afeta tudo<br>
+          &#9888; Sem isolamento de filesystem
+        </div>
+      </div>
+
+    </div>
     <aside class="notes">
       A próxima evolução: cgroups. Isolamento e limites de recursos por aplicação, no mesmo sistema operacional.
       Você usa o SO diretamente no HW físico, isolando suas aplicações, mas ainda compartilhando as bibliotecas.
@@ -257,8 +412,86 @@
     </aside>
   </section>
 
+  <!-- SLIDE 5 - CONTAINERS (cgroups + namespaces) -->
   <section class="center">
-    <img src="images/05-containers.png" class="slide-img" alt="Containers - cgroups + namespaces">
+    <h3 style="margin-bottom:25px; color:#999;">Containers -- cgroups + namespaces</h3>
+    <div class="arch-stack" style="width:560px; margin:0 auto; position:relative;">
+
+      <!-- Containers isolados -->
+      <div class="fragment fade-up" data-fragment-index="3" style="position:relative; z-index:3;">
+        <div style="display:flex; gap:4px; margin-bottom:2px;">
+          <div style="flex:1; border-radius:10px 0 0 0; border:2px solid #42a5f5; padding:0; overflow:hidden; background:linear-gradient(135deg,#0d47a1,#1565c0);">
+            <div style="padding:5px; text-align:center; font-size:0.5em; color:#90caf9; text-transform:uppercase; letter-spacing:1px;">&#128230; Container 1</div>
+            <div style="padding:6px 4px; text-align:center;">
+              <div style="font-size:1.1em;">&#9881;</div>
+              <div style="font-size:0.65em; font-weight:bold; color:#fff;">App A</div>
+              <div style="font-size:0.5em; color:#90caf9;">Libs v1 | FS próprio</div>
+            </div>
+          </div>
+          <div style="flex:1; border:2px solid #42a5f5; padding:0; overflow:hidden; background:linear-gradient(135deg,#0d47a1,#1565c0);">
+            <div style="padding:5px; text-align:center; font-size:0.5em; color:#90caf9; text-transform:uppercase; letter-spacing:1px;">&#128230; Container 2</div>
+            <div style="padding:6px 4px; text-align:center;">
+              <div style="font-size:1.1em;">&#9881;</div>
+              <div style="font-size:0.65em; font-weight:bold; color:#fff;">App B</div>
+              <div style="font-size:0.5em; color:#90caf9;">Libs v2 | FS próprio</div>
+            </div>
+          </div>
+          <div style="flex:1; border-radius:0 10px 0 0; border:2px solid #42a5f5; padding:0; overflow:hidden; background:linear-gradient(135deg,#0d47a1,#1565c0);">
+            <div style="padding:5px; text-align:center; font-size:0.5em; color:#90caf9; text-transform:uppercase; letter-spacing:1px;">&#128230; Container 3</div>
+            <div style="padding:6px 4px; text-align:center;">
+              <div style="font-size:1.1em;">&#9881;</div>
+              <div style="font-size:0.65em; font-weight:bold; color:#fff;">App C</div>
+              <div style="font-size:0.5em; color:#90caf9;">Libs v1 | FS próprio</div>
+            </div>
+          </div>
+        </div>
+        <!-- Container Runtime -->
+        <div style="background:linear-gradient(135deg,#4a148c,#6a1b9a); padding:8px; text-align:center; border:2px solid #9c27b0; margin-bottom:2px; font-size:0.75em; color:#ce93d8;">
+          &#9654; Container Runtime <span style="font-size:0.8em; color:#e1bee7;">(CRI-O, containerd)</span>
+        </div>
+      </div>
+
+      <!-- Host OS -->
+      <div class="fragment fade-up" data-fragment-index="2">
+        <div style="background:linear-gradient(135deg,#2e7d32,#43a047); padding:12px 20px; margin-bottom:2px; border:2px solid #66bb6a; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.5em;">&#128421;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Host Operating System</div>
+            <div style="font-size:0.65em; color:#c8e6c9;">cgroups + namespaces (PID, NET, MNT, UTS, IPC)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure -->
+      <div class="fragment fade-up" data-fragment-index="1">
+        <div style="background:linear-gradient(135deg,#555,#777); border-radius:0 0 10px 10px; padding:12px 20px; border:2px solid #999; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.5em;">&#127981;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Infrastructure</div>
+            <div style="font-size:0.65em; color:#ccc;">CPU, RAM, Disco, Rede</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anotações -->
+      <div class="fragment fade-in" data-fragment-index="4" style="position:absolute; right:-240px; top:0; width:220px; text-align:left;">
+        <div style="font-size:0.7em; color:#4caf50; border-left:3px solid #4caf50; padding-left:10px;">
+          &#10003; Isolamento completo<br>
+          &#10003; Libs independentes<br>
+          &#10003; Filesystem próprio<br>
+          &#10003; Rede isolada (namespace)<br>
+          &#10003; Sem overhead de VM<br>
+          &#10003; Startup em segundos
+        </div>
+      </div>
+      <div class="fragment fade-in" data-fragment-index="5" style="position:absolute; left:-240px; top:5px; width:220px; text-align:right;">
+        <div style="font-size:0.7em; color:#ff9800; border-right:3px solid #ff9800; padding-right:10px;">
+          &#9888; Bug de kernel afeta<br>o nó inteiro<br>
+          &#9888; Compartilha o kernel<br>do host
+        </div>
+      </div>
+
+    </div>
     <aside class="notes">
       Então começamos a usar cgroups mais namespaces do Linux. Namespaces são um recurso do kernel que particiona
       os recursos de forma que um conjunto de processos vê um conjunto de recursos, enquanto outro conjunto vê um conjunto diferente.
@@ -267,8 +500,111 @@
     </aside>
   </section>
 
+  <!-- SLIDE 6 - CONTAINERS + VIRTUALIZAÇÃO (O MELHOR DOS DOIS MUNDOS) -->
   <section class="center">
-    <img src="images/06-container-virtualization.png" class="slide-img" alt="Container + Virtualization">
+    <h3 style="margin-bottom:20px; color:#999;">O melhor dos dois mundos -- Kubernetes / OpenShift</h3>
+    <div class="arch-stack" style="width:600px; margin:0 auto; position:relative;">
+
+      <!-- Nós com containers -->
+      <div class="fragment fade-up" data-fragment-index="4" style="position:relative; z-index:4;">
+        <div style="display:flex; gap:6px; margin-bottom:2px;">
+          <!-- Node 1 -->
+          <div style="flex:1; border:2px solid #42a5f5; border-radius:8px 0 0 0; overflow:hidden; background:rgba(21,101,192,0.1);">
+            <div style="background:linear-gradient(135deg,#1565c0,#1e88e5); padding:5px; text-align:center; font-size:0.55em; color:#fff; font-weight:bold;">&#9741; Node 1 (VM)</div>
+            <div style="display:flex; gap:2px; padding:6px 4px;">
+              <div style="flex:1; background:linear-gradient(135deg,#0d47a1,#1565c0); border-radius:4px; padding:4px; text-align:center;">
+                <div style="font-size:0.9em;">&#128230;</div>
+                <div style="font-size:0.5em; color:#fff;">App A</div>
+              </div>
+              <div style="flex:1; background:linear-gradient(135deg,#0d47a1,#1565c0); border-radius:4px; padding:4px; text-align:center;">
+                <div style="font-size:0.9em;">&#128230;</div>
+                <div style="font-size:0.5em; color:#fff;">App B</div>
+              </div>
+            </div>
+          </div>
+          <!-- Node 2 -->
+          <div style="flex:1; border:2px solid #42a5f5; overflow:hidden; background:rgba(21,101,192,0.1);">
+            <div style="background:linear-gradient(135deg,#1565c0,#1e88e5); padding:5px; text-align:center; font-size:0.55em; color:#fff; font-weight:bold;">&#9741; Node 2 (VM)</div>
+            <div style="display:flex; gap:2px; padding:6px 4px;">
+              <div style="flex:1; background:linear-gradient(135deg,#0d47a1,#1565c0); border-radius:4px; padding:4px; text-align:center;">
+                <div style="font-size:0.9em;">&#128230;</div>
+                <div style="font-size:0.5em; color:#fff;">App C</div>
+              </div>
+              <div style="flex:1; background:linear-gradient(135deg,#0d47a1,#1565c0); border-radius:4px; padding:4px; text-align:center;">
+                <div style="font-size:0.9em;">&#128230;</div>
+                <div style="font-size:0.5em; color:#fff;">App D</div>
+              </div>
+            </div>
+          </div>
+          <!-- Node 3 -->
+          <div style="flex:1; border:2px solid #42a5f5; border-radius:0 8px 0 0; overflow:hidden; background:rgba(21,101,192,0.1);">
+            <div style="background:linear-gradient(135deg,#1565c0,#1e88e5); padding:5px; text-align:center; font-size:0.55em; color:#fff; font-weight:bold;">&#9741; Node 3 (VM)</div>
+            <div style="display:flex; gap:2px; padding:6px 4px;">
+              <div style="flex:1; background:linear-gradient(135deg,#0d47a1,#1565c0); border-radius:4px; padding:4px; text-align:center;">
+                <div style="font-size:0.9em;">&#128230;</div>
+                <div style="font-size:0.5em; color:#fff;">App E</div>
+              </div>
+              <div style="flex:1; background:linear-gradient(135deg,#0d47a1,#1565c0); border-radius:4px; padding:4px; text-align:center;">
+                <div style="font-size:0.9em;">&#128230;</div>
+                <div style="font-size:0.5em; color:#fff;">App F</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orquestrador -->
+      <div class="fragment fade-up" data-fragment-index="3">
+        <div style="background:linear-gradient(135deg,#b71c1c,#cc0000); padding:10px 20px; margin-bottom:2px; border:2px solid #ef5350; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.4em;">&#9096;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Kubernetes / OpenShift</div>
+            <div style="font-size:0.6em; color:#ffcdd2;">Scheduler, kubelet, cgroups, namespaces</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hypervisor -->
+      <div class="fragment fade-up" data-fragment-index="2">
+        <div style="background:linear-gradient(135deg,#e65100,#f57c00); padding:10px 20px; margin-bottom:2px; border:2px solid #ff9800; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.4em;">&#9000;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Hypervisor / Cloud Provider</div>
+            <div style="font-size:0.6em; color:#ffe0b2;">AWS, Azure, vSphere, Bare Metal...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure -->
+      <div class="fragment fade-up" data-fragment-index="1">
+        <div style="background:linear-gradient(135deg,#555,#777); border-radius:0 0 10px 10px; padding:10px 20px; border:2px solid #999; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.4em;">&#127981;</span>
+          <div>
+            <div style="font-size:0.9em; font-weight:bold; color:#fff;">Infrastructure</div>
+            <div style="font-size:0.6em; color:#ccc;">Data Center / Nuvem</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anotação -->
+      <div class="fragment fade-in" data-fragment-index="5" style="position:absolute; right:-250px; top:0; width:230px; text-align:left;">
+        <div style="font-size:0.7em; color:#4caf50; border-left:3px solid #4caf50; padding-left:10px;">
+          &#10003; Isolamento de VM<br>
+          &#10003; Eficiência de container<br>
+          &#10003; Orquestração automática<br>
+          &#10003; Scaling, self-healing<br>
+          &#10003; Requests e Limits!
+        </div>
+      </div>
+      <div class="fragment fade-in" data-fragment-index="6" style="position:absolute; left:-250px; top:10px; width:230px; text-align:right;">
+        <div style="font-size:0.7em; color:#ff9800; border-right:3px solid #ff9800; padding-right:10px;">
+          E é exatamente sobre<br>
+          <strong style="color:#fff;">como configurar<br>corretamente os recursos</strong><br>
+          que vamos falar agora.
+        </div>
+      </div>
+
+    </div>
     <aside class="notes">
       Hoje em dia, trabalhamos com o melhor dos dois mundos: containers rodando dentro de VMs.
       No slide anterior, ainda usamos a infra inteira do nó. Se ocorrer um incidente como um bug de kernel, pode onerar o nó todo.
