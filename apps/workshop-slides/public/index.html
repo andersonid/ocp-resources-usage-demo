@@ -2040,34 +2040,75 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="/socket.io/socket.io.js"></script>
 <script>
-Reveal.initialize({
-  hash: true,
-  slideNumber: 'c/t',
-  showSlideNumber: 'all',
-  transition: 'slide',
-  transitionSpeed: 'fast',
-  controlsTutorial: false,
-  progress: true,
-  center: false,
-  width: 1280,
-  height: 720,
-  margin: 0.05,
-  plugins: [ RevealNotes, RevealHighlight ]
-});
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var isPresenter = params.has('presenter');
 
-// Disable demo buttons if cluster domain is not set
-document.addEventListener('DOMContentLoaded', function() {
-  var links = document.querySelectorAll('.demo-btn');
-  var marker = '__CLUSTER' + '_DOMAIN__';
-  links.forEach(function(link) {
-    if (link.href && link.href.indexOf(marker) !== -1) {
-      link.classList.add('disabled');
-      link.removeAttribute('href');
-      link.title = 'Domínio do cluster não detectado';
+  Reveal.initialize({
+    hash: !isPresenter,
+    slideNumber: 'c/t',
+    showSlideNumber: 'all',
+    transition: 'slide',
+    transitionSpeed: 'fast',
+    controlsTutorial: false,
+    progress: true,
+    center: false,
+    width: 1280,
+    height: 720,
+    margin: 0.05,
+    plugins: [ RevealNotes, RevealHighlight ]
+  }).then(function() {
+    // ----- Multiplex via Socket.io -----
+    var socket = io({ query: { role: isPresenter ? 'presenter' : 'client' } });
+
+    if (isPresenter) {
+      // Presenter: send state on every slide/fragment change
+      function sendState() {
+        var indices = Reveal.getIndices();
+        socket.emit('slidechanged', {
+          indexh: indices.h,
+          indexv: indices.v,
+          indexf: indices.f === undefined ? -1 : indices.f
+        });
+      }
+      Reveal.on('slidechanged', sendState);
+      Reveal.on('fragmentshown', sendState);
+      Reveal.on('fragmenthidden', sendState);
+
+      // Open speaker notes in a new window automatically
+      if (!window.__notesOpened) {
+        window.__notesOpened = true;
+        // Small delay to let reveal finish init
+        setTimeout(function() {
+          Reveal.getPlugin('notes').open();
+        }, 500);
+      }
+    } else {
+      // Client: follow presenter commands (disable keyboard/touch navigation)
+      Reveal.configure({ keyboard: false, touch: false, controls: false });
+
+      socket.on('slidechanged', function(data) {
+        Reveal.slide(data.indexh, data.indexv, data.indexf);
+      });
+      socket.on('fragmentchanged', function(data) {
+        Reveal.slide(data.indexh, data.indexv, data.indexf);
+      });
     }
+
+    // ----- Disable demo buttons if cluster domain not set -----
+    var links = document.querySelectorAll('.demo-btn');
+    var marker = '__CLUSTER' + '_DOMAIN__';
+    links.forEach(function(link) {
+      if (link.href && link.href.indexOf(marker) !== -1) {
+        link.classList.add('disabled');
+        link.removeAttribute('href');
+        link.title = 'Dominio do cluster nao detectado';
+      }
+    });
   });
-});
+})();
 </script>
 </body>
 </html>

@@ -3,8 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
 const PORT = process.env.PORT || 8080;
 
 let clusterDomain = process.env.CLUSTER_DOMAIN || '';
@@ -99,6 +102,41 @@ app.get('/api/cluster-domain', (req, res) => {
   res.json({ domain: clusterDomain });
 });
 
+// ------------------------------------------------------------------
+// Socket.io Multiplex -- presenter controls all clients in real time
+// ------------------------------------------------------------------
+let currentState = { indexh: 0, indexv: 0, indexf: -1 };
+
+io.on('connection', (socket) => {
+  const role = socket.handshake.query.role;
+  console.log(`Socket connected: ${role} (${socket.id})`);
+
+  // Send current state to newly connected clients so they sync immediately
+  if (role === 'client') {
+    socket.emit('slidechanged', currentState);
+  }
+
+  // Presenter broadcasts slide changes
+  socket.on('slidechanged', (data) => {
+    if (role === 'presenter') {
+      currentState = data;
+      socket.broadcast.emit('slidechanged', data);
+    }
+  });
+
+  // Presenter broadcasts fragment changes
+  socket.on('fragmentchanged', (data) => {
+    if (role === 'presenter') {
+      currentState = data;
+      socket.broadcast.emit('fragmentchanged', data);
+    }
+  });
+
+  socket.on('disconnect', () => {
+    console.log(`Socket disconnected: ${role} (${socket.id})`);
+  });
+});
+
 async function start() {
   const detected = await detectClusterDomain();
   if (detected) clusterDomain = detected;
@@ -106,7 +144,7 @@ async function start() {
     console.log('WARNING: Cluster domain not detected. Demo links will be disabled.');
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`Workshop slides running on port ${PORT}`);
     console.log(`Cluster domain: ${clusterDomain || '(not detected)'}`);
   });
