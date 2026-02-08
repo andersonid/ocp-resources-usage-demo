@@ -856,7 +856,589 @@
       Overcommit: a soma dos limits ultrapassa a capacidade real do nó. Parece perigoso, mas funciona porque
       nem todas as apps usam o máximo ao mesmo tempo. Picos são distribuídos no tempo.
       Overcommit de CPU é aceitável -- throttling. Overcommit de memória é perigoso -- OOMKill.
-      Agora que entenderam o conceito, vamos ver como o OpenShift aplica isso em dois momentos distintos: scheduling e runtime.
+      Agora que entendemos requests, limits e overcommit -- a próxima pergunta é: como ajustar esses valores dinamicamente?
+    </aside>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- HPA - HORIZONTAL POD AUTOSCALER -->
+  <!-- ============================================================ -->
+
+  <!-- HPA-1: Deployment com replicas fixas -->
+  <section class="center">
+    <h3 style="margin-bottom:15px;">Horizontal Pod Autoscaler</h3>
+    <p style="color:#999; font-size:0.75em; margin-bottom:20px;">Escalando horizontalmente -- mais pods</p>
+    <div style="display:flex; align-items:center; justify-content:center; gap:20px; margin-top:10px;">
+
+      <!-- Deployment box -->
+      <div class="fragment fade-right" data-fragment-index="1" style="text-align:center;">
+        <div style="border:2px solid #999; border-radius:8px; padding:12px 16px; background:rgba(255,255,255,0.05); min-width:100px;">
+          <div style="font-size:0.65em; color:#aaa; font-family:monospace; text-align:left;">
+            cpu: 100m<br>memory: 128Mi<br>replicas: <strong style="color:#fff;">3</strong>
+          </div>
+        </div>
+        <div style="font-size:0.7em; color:#999; margin-top:6px;">Deployment</div>
+      </div>
+
+      <!-- Seta -->
+      <div class="fragment fade-in" data-fragment-index="1" style="font-size:1.2em; color:#999;">&#10132;</div>
+
+      <!-- Pods (todos iguais e ativos) -->
+      <div class="fragment fade-left" data-fragment-index="1" style="display:flex; gap:12px;">
+        <div style="text-align:center;">
+          <div style="font-size:0.55em; color:#ff9800; margin-bottom:4px;">1</div>
+          <div style="border:3px solid #ff9800; border-radius:10px; padding:10px 14px; background:rgba(255,152,0,0.08);">
+            <div style="border:2px dashed #ff9800; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em;">&#9881;</div>
+              <div style="font-size:0.5em; color:#ff9800;">CONTAINER</div>
+            </div>
+            <div style="font-size:0.65em; color:#fff; margin-top:4px;">POD</div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.55em; color:#ff9800; margin-bottom:4px;">2</div>
+          <div style="border:3px solid #ff9800; border-radius:10px; padding:10px 14px; background:rgba(255,152,0,0.08);">
+            <div style="border:2px dashed #ff9800; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em;">&#9881;</div>
+              <div style="font-size:0.5em; color:#ff9800;">CONTAINER</div>
+            </div>
+            <div style="font-size:0.65em; color:#fff; margin-top:4px;">POD</div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.55em; color:#ff9800; margin-bottom:4px;">3</div>
+          <div style="border:3px solid #ff9800; border-radius:10px; padding:10px 14px; background:rgba(255,152,0,0.08);">
+            <div style="border:2px dashed #ff9800; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em;">&#9881;</div>
+              <div style="font-size:0.5em; color:#ff9800;">CONTAINER</div>
+            </div>
+            <div style="font-size:0.65em; color:#fff; margin-top:4px;">POD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="2" style="max-width:600px; margin:20px auto 0;">
+      <div class="key-message" style="text-align:left;">
+        Um Deployment com <strong>replicas fixas</strong> mantém sempre o mesmo número de pods.<br>
+        Mas a demanda varia ao longo do dia. Nem sempre você precisa de todas as replicas.
+      </div>
+    </div>
+    <aside class="notes">
+      O número de replicas de um Deployment é fixo. Se você configura 3, sempre terá 3 pods rodando.
+      Mas a demanda real da aplicação varia. De madrugada, talvez 1 pod dê conta. No pico da tarde, talvez precise de 5.
+      Manter replicas fixas significa desperdiçar recursos fora do pico ou faltar recursos durante o pico.
+    </aside>
+  </section>
+
+  <!-- HPA-2: Replicas ociosas -->
+  <section class="center">
+    <h3 style="margin-bottom:15px;">Replicas fixas = desperdício</h3>
+    <div style="display:flex; align-items:center; justify-content:center; gap:20px; margin-top:20px;">
+
+      <div style="text-align:center;">
+        <div style="border:2px solid #999; border-radius:8px; padding:12px 16px; background:rgba(255,255,255,0.05); min-width:100px;">
+          <div style="font-size:0.65em; color:#aaa; font-family:monospace; text-align:left;">
+            cpu: 100m<br>memory: 128Mi<br>replicas: <strong style="color:#fff;">3</strong>
+          </div>
+        </div>
+        <div style="font-size:0.7em; color:#999; margin-top:6px;">Deployment</div>
+      </div>
+
+      <div style="font-size:1.2em; color:#999;">&#10132;</div>
+
+      <div style="display:flex; gap:12px;">
+        <!-- Pod 1 ativo -->
+        <div style="text-align:center;">
+          <div style="font-size:0.55em; color:#4caf50; margin-bottom:4px;">1</div>
+          <div style="border:3px solid #4caf50; border-radius:10px; padding:10px 14px; background:rgba(76,175,80,0.08);">
+            <div style="border:2px dashed #4caf50; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em;">&#9881;</div>
+              <div style="font-size:0.5em; color:#4caf50;">ATIVO</div>
+            </div>
+            <div style="font-size:0.65em; color:#fff; margin-top:4px;">POD</div>
+          </div>
+        </div>
+        <!-- Pod 2 ocioso -->
+        <div class="fragment fade-in" data-fragment-index="1" style="text-align:center; opacity:0.4;">
+          <div style="font-size:0.55em; color:#999; margin-bottom:4px;">2</div>
+          <div style="border:3px dashed #666; border-radius:10px; padding:10px 14px; background:rgba(255,255,255,0.02);">
+            <div style="border:2px dashed #666; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em; opacity:0.5;">&#9881;</div>
+              <div style="font-size:0.5em; color:#666;">OCIOSO</div>
+            </div>
+            <div style="font-size:0.65em; color:#666; margin-top:4px;">POD</div>
+          </div>
+        </div>
+        <!-- Pod 3 ocioso -->
+        <div class="fragment fade-in" data-fragment-index="1" style="text-align:center; opacity:0.4;">
+          <div style="font-size:0.55em; color:#999; margin-bottom:4px;">3</div>
+          <div style="border:3px dashed #666; border-radius:10px; padding:10px 14px; background:rgba(255,255,255,0.02);">
+            <div style="border:2px dashed #666; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em; opacity:0.5;">&#9881;</div>
+              <div style="font-size:0.5em; color:#666;">OCIOSO</div>
+            </div>
+            <div style="font-size:0.65em; color:#666; margin-top:4px;">POD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="2" style="max-width:600px; margin:20px auto 0;">
+      <div class="key-message" style="text-align:left;">
+        Fora do horário de pico, apenas 1 pod está processando. Os outros 2 <strong>consomem recursos sem necessidade</strong>.<br>
+        E se a demanda superar 3 pods? Não há como escalar além do fixo.
+      </div>
+    </div>
+    <aside class="notes">
+      Esse é o cenário típico: 3 replicas fixas, mas fora do pico apenas 1 pod está de fato processando requisições.
+      Os outros 2 estão lá, consumindo CPU e memória do nó, reservando requests no scheduler, sem fazer nada útil.
+      E no cenário oposto, se a demanda explodir, 3 pods pode não ser suficiente. Replicas fixas não se adaptam.
+    </aside>
+  </section>
+
+  <!-- HPA-3: HPA em ação - scale up -->
+  <section class="center">
+    <h3 style="margin-bottom:10px;">HPA -- Scale Up automático</h3>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:15px; margin-top:15px;">
+
+      <!-- Linha de cima: Deployment + Pods -->
+      <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+        <div style="text-align:center;">
+          <div style="border:2px solid #999; border-radius:8px; padding:10px 14px; background:rgba(255,255,255,0.05);">
+            <div style="font-size:0.6em; color:#aaa; font-family:monospace; text-align:left;">cpu: 100m<br>memory: 128Mi</div>
+          </div>
+          <div style="font-size:0.65em; color:#999; margin-top:4px;">Deployment</div>
+        </div>
+
+        <div style="font-size:1.2em; color:#999;">&#10132;</div>
+
+        <!-- Pod 1 sob pressão -->
+        <div style="text-align:center;">
+          <div style="font-size:0.5em; color:#f44336; margin-bottom:3px;">1</div>
+          <div style="border:3px solid #f44336; border-radius:10px; padding:8px 12px; background:rgba(244,67,54,0.1);">
+            <div style="border:2px dashed #f44336; border-radius:6px; padding:6px 8px;">
+              <div style="font-size:0.8em;">&#9881;</div>
+              <div style="font-size:0.45em; color:#f44336;">85% CPU</div>
+            </div>
+            <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+          </div>
+        </div>
+
+        <div style="font-size:0.9em; color:#999;">...</div>
+
+        <!-- Novos pods aparecendo -->
+        <div class="fragment fade-in" data-fragment-index="2" style="display:flex; gap:10px;">
+          <div style="text-align:center;">
+            <div style="font-size:0.5em; color:#4caf50; margin-bottom:3px;">2</div>
+            <div style="border:3px solid #4caf50; border-radius:10px; padding:8px 12px; background:rgba(76,175,80,0.08);">
+              <div style="border:2px dashed #4caf50; border-radius:6px; padding:6px 8px;">
+                <div style="font-size:0.8em;">&#9881;</div>
+                <div style="font-size:0.45em; color:#4caf50;">NOVO</div>
+              </div>
+              <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:0.5em; color:#4caf50; margin-bottom:3px;">N</div>
+            <div style="border:3px solid #4caf50; border-radius:10px; padding:8px 12px; background:rgba(76,175,80,0.08);">
+              <div style="border:2px dashed #4caf50; border-radius:6px; padding:6px 8px;">
+                <div style="font-size:0.8em;">&#9881;</div>
+                <div style="font-size:0.45em; color:#4caf50;">NOVO</div>
+              </div>
+              <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Linha de baixo: HPA + Monitoring -->
+      <div style="display:flex; align-items:center; justify-content:center; gap:30px;">
+        <!-- HPA -->
+        <div class="fragment fade-up" data-fragment-index="1" style="text-align:center;">
+          <div style="border:2px solid #42a5f5; border-radius:8px; padding:10px 16px; background:rgba(66,165,245,0.08);">
+            <div style="font-size:0.6em; color:#42a5f5; font-weight:bold;">HPA</div>
+            <div style="font-size:0.55em; color:#aaa; font-family:monospace; margin-top:4px;">target: <strong style="color:#ff9800;">70%</strong> CPU</div>
+            <div style="font-size:0.55em; color:#aaa; font-family:monospace;">min: 1 | max: 5</div>
+          </div>
+        </div>
+
+        <div class="fragment fade-in" data-fragment-index="1" style="font-size:1em; color:#999;">&#10229;</div>
+
+        <!-- Monitoring -->
+        <div class="fragment fade-up" data-fragment-index="1" style="text-align:center;">
+          <div style="border:2px solid #ff9800; border-radius:8px; padding:10px 16px; background:rgba(255,152,0,0.08);">
+            <div style="font-size:0.6em; color:#ff9800; font-weight:bold;">Metrics Server</div>
+            <div style="font-size:0.55em; color:#f44336; font-family:monospace; margin-top:4px;">cpu: <strong>85%</strong> &#9650;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="3" style="max-width:650px; margin:15px auto 0;">
+      <div class="key-message" style="text-align:left;">
+        O HPA compara o uso real (85%) com o target (70%). Resultado: <strong>cria novas replicas</strong>.<br>
+        O cálculo usa os <strong>requests</strong> como referência. Request de 100m + target 70% = escala quando chegar em 70m.
+      </div>
+    </div>
+    <aside class="notes">
+      O HPA monitora o uso real de CPU (via Metrics Server) e compara com o target que você definiu.
+      O cálculo é baseado nos requests, não nos limits. Se o request é 100m e o target é 70%,
+      quando o uso médio dos pods chegar em 70m, o HPA cria uma nova replica.
+      Por isso o app-ruim com request de 2000m e target de 70% nunca escala -- 70% de 2000m é 1400m,
+      e a app idle nunca chega perto disso.
+    </aside>
+  </section>
+
+  <!-- HPA-4: Após scale - carga distribuída -->
+  <section class="center">
+    <h3 style="margin-bottom:10px;">HPA -- Carga distribuída</h3>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:15px; margin-top:15px;">
+
+      <!-- Pods agora balanceados -->
+      <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+        <div style="text-align:center;">
+          <div style="border:2px solid #999; border-radius:8px; padding:10px 14px; background:rgba(255,255,255,0.05);">
+            <div style="font-size:0.6em; color:#aaa; font-family:monospace; text-align:left;">cpu: 100m<br>memory: 128Mi</div>
+          </div>
+          <div style="font-size:0.65em; color:#999; margin-top:4px;">Deployment</div>
+        </div>
+
+        <div style="font-size:1.2em; color:#999;">&#10132;</div>
+
+        <div style="display:flex; gap:10px;">
+          <div style="text-align:center;">
+            <div style="font-size:0.5em; color:#4caf50; margin-bottom:3px;">1</div>
+            <div style="border:3px solid #4caf50; border-radius:10px; padding:8px 12px; background:rgba(76,175,80,0.08);">
+              <div style="border:2px dashed #4caf50; border-radius:6px; padding:6px 8px;">
+                <div style="font-size:0.8em;">&#9881;</div>
+                <div style="font-size:0.45em; color:#4caf50;">35% CPU</div>
+              </div>
+              <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:0.5em; color:#4caf50; margin-bottom:3px;">2</div>
+            <div style="border:3px solid #4caf50; border-radius:10px; padding:8px 12px; background:rgba(76,175,80,0.08);">
+              <div style="border:2px dashed #4caf50; border-radius:6px; padding:6px 8px;">
+                <div style="font-size:0.8em;">&#9881;</div>
+                <div style="font-size:0.45em; color:#4caf50;">35% CPU</div>
+              </div>
+              <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+            </div>
+          </div>
+          <div style="text-align:center; opacity:0.4;">
+            <div style="font-size:0.5em; color:#999; margin-bottom:3px;">N</div>
+            <div style="border:3px dashed #666; border-radius:10px; padding:8px 12px; background:rgba(255,255,255,0.02);">
+              <div style="border:2px dashed #666; border-radius:6px; padding:6px 8px;">
+                <div style="font-size:0.8em; opacity:0.5;">&#9881;</div>
+                <div style="font-size:0.45em; color:#666;">STANDBY</div>
+              </div>
+              <div style="font-size:0.6em; color:#666; margin-top:3px;">POD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HPA + Monitoring -->
+      <div style="display:flex; align-items:center; justify-content:center; gap:30px;">
+        <div style="text-align:center;">
+          <div style="border:2px solid #42a5f5; border-radius:8px; padding:10px 16px; background:rgba(66,165,245,0.08);">
+            <div style="font-size:0.6em; color:#42a5f5; font-weight:bold;">HPA</div>
+            <div style="font-size:0.55em; color:#aaa; font-family:monospace; margin-top:4px;">target: <strong style="color:#ff9800;">70%</strong> CPU</div>
+          </div>
+        </div>
+        <div style="font-size:1em; color:#999;">&#10229;</div>
+        <div style="text-align:center;">
+          <div style="border:2px solid #4caf50; border-radius:8px; padding:10px 16px; background:rgba(76,175,80,0.08);">
+            <div style="font-size:0.6em; color:#4caf50; font-weight:bold;">Metrics Server</div>
+            <div style="font-size:0.55em; color:#4caf50; font-family:monospace; margin-top:4px;">cpu: <strong>35%</strong> &#9660;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="1" style="max-width:650px; margin:15px auto 0;">
+      <div class="key-message" style="text-align:left;">
+        Com 2 pods, a carga cai para ~35% cada. O HPA <strong>não escala mais</strong> porque está abaixo do target.<br>
+        <span style="color:#ff9800;">Cuidado</span>: se o target for mal dimensionado, pode gerar <strong>flapping</strong> -- cria e destrói pods em loop.<br>
+        <span style="color:#42a5f5;">HPA nativo funciona bem por CPU</span>. Para escalar por requisições/s, considere <strong>KEDA</strong> (Custom Metrics).
+      </div>
+    </div>
+    <aside class="notes">
+      Com 2 pods, o Service distribui a carga e cada pod cai para ~35%. O HPA vê que está abaixo do target e para de escalar.
+      Ponto importante: se o target estiver mal configurado, pode gerar flapping -- escala, a carga cai, remove o pod, a carga sobe, escala de novo.
+      Outro ponto: o HPA nativo do Kubernetes funciona bem por CPU. Para memória, o comportamento é imprevisível porque memória é incompressível.
+      Para cenários mais avançados como escalar por requisições por segundo, existe o KEDA, que já está disponível no OpenShift como Custom Metrics Autoscaler.
+      Vamos demonstrar o HPA do app-bom na prática mais adiante.
+    </aside>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- VPA - VERTICAL POD AUTOSCALER -->
+  <!-- ============================================================ -->
+
+  <!-- VPA-1: Deployment com recursos fixos -->
+  <section class="center">
+    <h3 style="margin-bottom:15px;">Vertical Pod Autoscaler</h3>
+    <p style="color:#999; font-size:0.75em; margin-bottom:20px;">Escalando verticalmente -- pods maiores</p>
+    <div style="display:flex; align-items:center; justify-content:center; gap:20px; margin-top:10px;">
+
+      <div class="fragment fade-right" data-fragment-index="1" style="text-align:center;">
+        <div style="border:2px solid #999; border-radius:8px; padding:12px 16px; background:rgba(255,255,255,0.05); min-width:110px;">
+          <div style="font-size:0.65em; color:#aaa; font-family:monospace; text-align:left;">
+            cpu: <strong style="color:#42a5f5;">100m</strong><br>memory: <strong style="color:#ab47bc;">512Mi</strong>
+          </div>
+        </div>
+        <div style="font-size:0.7em; color:#999; margin-top:6px;">Deployment</div>
+      </div>
+
+      <div class="fragment fade-in" data-fragment-index="1" style="font-size:1.2em; color:#999;">&#10132;</div>
+
+      <div class="fragment fade-left" data-fragment-index="1" style="display:flex; gap:12px;">
+        <div style="text-align:center;">
+          <div style="font-size:0.5em; color:#ff9800; margin-bottom:3px;">1</div>
+          <div style="border:3px solid #ff9800; border-radius:10px; padding:10px 14px; background:rgba(255,152,0,0.08); transition:all 0.5s;">
+            <div style="border:2px dashed #ff9800; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em;">&#9881;</div>
+              <div style="font-size:0.5em; color:#ff9800;">CONTAINER</div>
+            </div>
+            <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.5em; color:#ff9800; margin-bottom:3px;">2</div>
+          <div style="border:3px solid #ff9800; border-radius:10px; padding:10px 14px; background:rgba(255,152,0,0.08);">
+            <div style="border:2px dashed #ff9800; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em;">&#9881;</div>
+              <div style="font-size:0.5em; color:#ff9800;">CONTAINER</div>
+            </div>
+            <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:0.5em; color:#ff9800; margin-bottom:3px;">3</div>
+          <div style="border:3px solid #ff9800; border-radius:10px; padding:10px 14px; background:rgba(255,152,0,0.08);">
+            <div style="border:2px dashed #ff9800; border-radius:6px; padding:8px 10px;">
+              <div style="font-size:0.9em;">&#9881;</div>
+              <div style="font-size:0.5em; color:#ff9800;">CONTAINER</div>
+            </div>
+            <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="2" style="max-width:600px; margin:20px auto 0;">
+      <div class="key-message" style="text-align:left;">
+        Diferente do HPA, o VPA <strong>não muda o número de replicas</strong>.<br>
+        Ele ajusta os <strong>requests e limits</strong> de cada pod -- muda o <em>tamanho</em>, não a <em>quantidade</em>.
+      </div>
+    </div>
+    <aside class="notes">
+      Agora o VPA -- Vertical Pod Autoscaler. Conceito completamente diferente do HPA.
+      O HPA adiciona pods. O VPA muda o tamanho dos pods existentes -- ajusta os requests e limits.
+      Aqui temos um Deployment com 100m de CPU e 512Mi de memória. 3 replicas fixas.
+      Mas será que esses valores estão corretos? Como saber?
+    </aside>
+  </section>
+
+  <!-- VPA-2: Monitoring detecta uso real -->
+  <section class="center">
+    <h3 style="margin-bottom:10px;">VPA -- Monitorando o uso real</h3>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:15px; margin-top:15px;">
+
+      <!-- Deployment + Pods -->
+      <div style="display:flex; align-items:center; justify-content:center; gap:20px;">
+        <div style="text-align:center;">
+          <div style="border:2px solid #999; border-radius:8px; padding:10px 14px; background:rgba(255,255,255,0.05);">
+            <div style="font-size:0.6em; color:#aaa; font-family:monospace; text-align:left;">cpu: <strong style="color:#42a5f5;">100m</strong><br>memory: <strong style="color:#ab47bc;">512Mi</strong></div>
+          </div>
+          <div style="font-size:0.65em; color:#999; margin-top:4px;">Deployment</div>
+        </div>
+
+        <div style="font-size:1.2em; color:#999;">&#10132;</div>
+
+        <div style="display:flex; gap:10px;">
+          <div style="text-align:center;">
+            <div style="border:3px solid #ff9800; border-radius:10px; padding:8px 12px; background:rgba(255,152,0,0.08);">
+              <div style="border:2px dashed #ff9800; border-radius:6px; padding:6px 8px;">
+                <div style="font-size:0.8em;">&#9881;</div>
+              </div>
+              <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div style="border:3px solid #ff9800; border-radius:10px; padding:8px 12px; background:rgba(255,152,0,0.08);">
+              <div style="border:2px dashed #ff9800; border-radius:6px; padding:6px 8px;">
+                <div style="font-size:0.8em;">&#9881;</div>
+              </div>
+              <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+            </div>
+          </div>
+          <div style="text-align:center;">
+            <div style="border:3px solid #ff9800; border-radius:10px; padding:8px 12px; background:rgba(255,152,0,0.08);">
+              <div style="border:2px dashed #ff9800; border-radius:6px; padding:6px 8px;">
+                <div style="font-size:0.8em;">&#9881;</div>
+              </div>
+              <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monitoring mostra uso real -->
+      <div class="fragment fade-up" data-fragment-index="1" style="text-align:center;">
+        <div style="border:2px solid #ff9800; border-radius:8px; padding:12px 20px; background:rgba(255,152,0,0.08);">
+          <div style="font-size:0.65em; color:#ff9800; font-weight:bold;">Prometheus / Metrics</div>
+          <div style="font-size:0.6em; color:#aaa; font-family:monospace; margin-top:6px;">
+            Uso real: cpu <strong style="color:#42a5f5;">~30m</strong> (30%) | memory <strong style="color:#ab47bc;">~200Mi</strong> (40%)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="2" style="max-width:600px; margin:15px auto 0;">
+      <div class="key-message" style="text-align:left;">
+        Configuramos 100m de CPU e 512Mi de memória. Mas a aplicação usa apenas <strong>30m e 200Mi</strong>.<br>
+        <span style="color:#f44336;">70% da CPU e 60% da memória estão sendo desperdiçados</span> em cada pod.
+      </div>
+    </div>
+    <aside class="notes">
+      O VPA usa o Prometheus para monitorar o uso real da aplicação por até 30 dias.
+      Nesse caso, configuramos 100m de CPU e 512Mi de memória, mas a aplicação está usando apenas 30m e 200Mi.
+      Estamos desperdiçando 70% da CPU e 60% da memória reservadas. Multiplicado por 3 replicas, é um desperdício enorme.
+    </aside>
+  </section>
+
+  <!-- VPA-3: Recomendação -->
+  <section class="center">
+    <h3 style="margin-bottom:10px;">VPA -- Recomendação de right-sizing</h3>
+    <div style="display:flex; align-items:center; justify-content:center; gap:30px; margin-top:20px;">
+
+      <!-- Antes (pod grande) -->
+      <div style="text-align:center;">
+        <div style="font-size:0.6em; color:#f44336; margin-bottom:6px;">Antes</div>
+        <div style="border:3px solid #f44336; border-radius:12px; padding:18px 22px; background:rgba(244,67,54,0.08); transition:all 0.5s;">
+          <div style="border:2px dashed #f44336; border-radius:8px; padding:14px 18px;">
+            <div style="font-size:1.4em;">&#9881;</div>
+            <div style="font-size:0.55em; color:#f44336; margin-top:4px;">CONTAINER</div>
+          </div>
+          <div style="font-size:0.7em; color:#fff; margin-top:6px;">POD</div>
+          <div style="font-size:0.55em; color:#f44336; font-family:monospace; margin-top:4px;">cpu: 100m<br>mem: 512Mi</div>
+        </div>
+      </div>
+
+      <!-- Seta com VPA -->
+      <div class="fragment fade-in" data-fragment-index="1" style="text-align:center;">
+        <div style="border:2px solid #ab47bc; border-radius:8px; padding:10px 16px; background:rgba(171,71,188,0.08);">
+          <div style="font-size:0.65em; color:#ab47bc; font-weight:bold;">VPA</div>
+          <div style="font-size:0.5em; color:#aaa; margin-top:4px;">Recomenda:</div>
+          <div style="font-size:0.55em; color:#4caf50; font-family:monospace; font-weight:bold;">cpu: 35m<br>mem: 220Mi</div>
+        </div>
+        <div style="font-size:1.2em; color:#ab47bc; margin-top:8px;">&#10132;</div>
+      </div>
+
+      <!-- Depois (pod menor) -->
+      <div class="fragment fade-in" data-fragment-index="2" style="text-align:center;">
+        <div style="font-size:0.6em; color:#4caf50; margin-bottom:6px;">Depois</div>
+        <div style="border:3px solid #4caf50; border-radius:10px; padding:10px 14px; background:rgba(76,175,80,0.08); transition:all 0.5s;">
+          <div style="border:2px dashed #4caf50; border-radius:6px; padding:8px 10px;">
+            <div style="font-size:0.9em;">&#9881;</div>
+            <div style="font-size:0.5em; color:#4caf50; margin-top:2px;">CONTAINER</div>
+          </div>
+          <div style="font-size:0.6em; color:#fff; margin-top:4px;">POD</div>
+          <div style="font-size:0.55em; color:#4caf50; font-family:monospace; margin-top:4px;">cpu: 35m<br>mem: 220Mi</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="3" style="max-width:650px; margin:15px auto 0;">
+      <div class="key-message" style="text-align:left;">
+        O VPA analisa o uso histórico e recomenda valores <strong>right-sized</strong>.<br>
+        No modo <strong>Auto</strong>: aplica automaticamente e <span style="color:#ff9800;">reinicia os pods</span>.<br>
+        No modo <strong>Off</strong> (recomendado): apenas sugere. Você lê, valida e aplica manualmente.
+      </div>
+    </div>
+    <aside class="notes">
+      O VPA analisou 30 dias de dados do Prometheus e recomenda: cpu 35m e memória 220Mi.
+      Isso é o right-sizing: ajustar os recursos ao uso real da aplicação.
+      O VPA tem dois modos principais: Auto, que aplica automaticamente -- mas reinicia os pods.
+      E Off, que é o recomendado para produção: ele apenas gera recomendações, e você decide quando aplicar.
+      A abordagem ideal: roda o VPA em homologação no modo Off, coleta as recomendações, adiciona 20% de margem,
+      e aplica em produção com confiança.
+    </aside>
+  </section>
+
+  <!-- VPA-4: Resultado final -->
+  <section class="center">
+    <h3 style="margin-bottom:10px;">VPA -- O resultado</h3>
+    <div style="display:flex; align-items:center; justify-content:center; gap:20px; margin-top:15px;">
+
+      <div style="text-align:center;">
+        <div style="border:2px solid #4caf50; border-radius:8px; padding:10px 14px; background:rgba(76,175,80,0.05);">
+          <div style="font-size:0.6em; color:#aaa; font-family:monospace; text-align:left;">cpu: <strong style="color:#4caf50;">35m</strong> <span style="color:#666; font-size:0.8em;">(era 100m)</span><br>memory: <strong style="color:#4caf50;">220Mi</strong> <span style="color:#666; font-size:0.8em;">(era 512Mi)</span></div>
+        </div>
+        <div style="font-size:0.65em; color:#999; margin-top:4px;">Deployment</div>
+      </div>
+
+      <div style="font-size:1.2em; color:#999;">&#10132;</div>
+
+      <div style="display:flex; gap:10px;">
+        <div style="text-align:center;">
+          <div style="border:3px solid #4caf50; border-radius:10px; padding:8px 12px; background:rgba(76,175,80,0.08);">
+            <div style="border:2px dashed #4caf50; border-radius:6px; padding:6px 8px;">
+              <div style="font-size:0.8em;">&#9881;</div>
+              <div style="font-size:0.45em; color:#4caf50;">RIGHT-SIZED</div>
+            </div>
+            <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="border:3px solid #4caf50; border-radius:10px; padding:8px 12px; background:rgba(76,175,80,0.08);">
+            <div style="border:2px dashed #4caf50; border-radius:6px; padding:6px 8px;">
+              <div style="font-size:0.8em;">&#9881;</div>
+              <div style="font-size:0.45em; color:#4caf50;">RIGHT-SIZED</div>
+            </div>
+            <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="border:3px solid #4caf50; border-radius:10px; padding:8px 12px; background:rgba(76,175,80,0.08);">
+            <div style="border:2px dashed #4caf50; border-radius:6px; padding:6px 8px;">
+              <div style="font-size:0.8em;">&#9881;</div>
+              <div style="font-size:0.45em; color:#4caf50;">RIGHT-SIZED</div>
+            </div>
+            <div style="font-size:0.6em; color:#fff; margin-top:3px;">POD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="1" style="max-width:650px; margin:20px auto 0;">
+      <div class="key-message" style="text-align:left;">
+        <strong>CPU</strong>: 100m &#10132; 35m = <span style="color:#4caf50;">65% de economia</span> no scheduler<br>
+        <strong>Memória</strong>: 512Mi &#10132; 220Mi = <span style="color:#4caf50;">57% de economia</span> por pod<br>
+        Multiplicado por 3 replicas = capacidade liberada para <strong>outros workloads</strong>.
+      </div>
+    </div>
+
+    <div class="fragment fade-up" data-fragment-index="2" style="max-width:650px; margin:10px auto 0;">
+      <div style="border-left:3px solid #ff9800; padding:8px 15px; background:rgba(255,152,0,0.05); font-size:0.7em;">
+        <strong style="color:#ff9800;">HPA + VPA juntos?</strong> Não é recomendado no mesmo recurso (CPU).
+        O VPA ajusta requests, o que muda a base de cálculo do HPA. Use VPA para right-sizing inicial
+        e HPA para elasticidade em produção.
+      </div>
+    </div>
+    <aside class="notes">
+      O resultado: economia de 65% em CPU e 57% em memória, em cada pod. Multiplicado por 3 replicas, a diferença é enorme.
+      Recursos liberados que podem ser usados por outros workloads no mesmo nó.
+      Ponto importante: não é recomendado usar HPA e VPA juntos no mesmo recurso.
+      O VPA muda os requests, e o HPA usa os requests como base de cálculo.
+      A abordagem recomendada: use o VPA para encontrar os valores corretos de right-sizing,
+      aplique no Deployment, e depois configure o HPA para elasticidade horizontal.
+      Vamos demonstrar o VPA na prática com o nosso workload-simulator mais adiante.
+      Agora, voltando à teoria: vamos entender como o OpenShift aplica tudo isso internamente.
     </aside>
   </section>
 
