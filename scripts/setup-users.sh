@@ -147,13 +147,24 @@ sleep 10
 oc rollout status deployment/oauth-openshift -n openshift-authentication --timeout=120s 2>/dev/null || \
   echo "  OAuth pods are restarting. It may take a moment for logins to work."
 
-# -- Assign roles ---------------------------------------------------------------
+# -- Create cluster-admins group and assign roles ------------------------------
 echo ""
-echo "Assigning cluster-admin roles..."
+echo "Creating cluster-admins group..."
+ADMIN_LIST=""
+for i in $(seq 1 "$NUM_ADMINS"); do
+  ADMIN_LIST="$ADMIN_LIST $(printf 'user%02d' "$i")"
+done
+
+oc adm groups new cluster-admins $ADMIN_LIST 2>/dev/null || \
+  oc adm groups sync cluster-admins --confirm 2>/dev/null || true
+
+# Ensure group exists and has the right members
+oc get group cluster-admins > /dev/null 2>&1 || oc adm groups new cluster-admins
 for i in $(seq 1 "$NUM_ADMINS"); do
   USERNAME=$(printf "user%02d" "$i")
+  oc adm groups add-users cluster-admins "$USERNAME" 2>/dev/null || true
   oc adm policy add-cluster-role-to-user cluster-admin "$USERNAME" 2>/dev/null
-  echo "  $USERNAME -> cluster-admin"
+  echo "  $USERNAME -> cluster-admin + cluster-admins group"
 done
 
 # -- Final summary -------------------------------------------------------------
