@@ -110,6 +110,39 @@ spec:
               claimName: pipeline-workspace
 ---
 apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  name: build-workshop-slides
+  namespace: demo-builds
+spec:
+  params:
+    - name: GIT_URL
+    - name: GIT_REVISION
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1
+      kind: PipelineRun
+      metadata:
+        generateName: workshop-slides-run-
+      spec:
+        pipelineRef:
+          name: build-and-push
+        params:
+          - name: GIT_URL
+            value: $(tt.params.GIT_URL)
+          - name: GIT_REVISION
+            value: $(tt.params.GIT_REVISION)
+          - name: APP_NAME
+            value: workshop-slides
+          - name: APP_PATH
+            value: apps/workshop-slides
+          - name: IMAGE
+            value: image-registry.openshift-image-registry.svc:5000/demo-builds/workshop-slides:latest
+        workspaces:
+          - name: source
+            persistentVolumeClaim:
+              claimName: pipeline-workspace
+---
+apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
   name: github-listener
@@ -156,3 +189,16 @@ spec:
         - ref: github-push-binding
       template:
         ref: build-workload-simulator
+    - name: workshop-slides-trigger
+      interceptors:
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: >-
+                body.ref == 'refs/heads/main' &&
+                body.commits.exists(c, c.modified.exists(f, f.startsWith('apps/workshop-slides/')) || c.added.exists(f, f.startsWith('apps/workshop-slides/')))
+      bindings:
+        - ref: github-push-binding
+      template:
+        ref: build-workshop-slides

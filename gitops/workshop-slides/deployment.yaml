@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workshop-slides
+  namespace: workshop-slides
+  labels:
+    app: workshop-slides
+    app.kubernetes.io/name: workshop-slides
+    app.kubernetes.io/part-of: workshop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workshop-slides
+  template:
+    metadata:
+      labels:
+        app: workshop-slides
+    spec:
+      containers:
+        - name: workshop-slides
+          image: image-registry.openshift-image-registry.svc:5000/demo-builds/workshop-slides:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

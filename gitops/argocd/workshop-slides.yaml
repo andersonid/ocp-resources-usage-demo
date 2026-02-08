@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: workshop-slides
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/andersonid/ocp-resources-usage-demo.git
+    targetRevision: main
+    path: gitops/workshop-slides
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: workshop-slides
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

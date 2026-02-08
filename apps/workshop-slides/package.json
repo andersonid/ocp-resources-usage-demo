@@ -1,0 +1,12 @@
+{
+  "name": "workshop-slides",
+  "version": "1.0.0",
+  "description": "Workshop slide deck - Dimensionamento e Scaling no OpenShift",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}

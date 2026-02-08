@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workshop - Dimensionamento e Scaling no OpenShift</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<style>
+  :root {
+    --r-background-color: #1a1a2e;
+    --r-main-color: #e0e0e0;
+    --r-heading-color: #ffffff;
+    --r-link-color: #ee0000;
+    --red: #cc0000;
+    --green: #2e7d32;
+    --blue: #1565c0;
+    --yellow: #f9a825;
+    --orange: #e65100;
+  }
+  .reveal { font-size: 28px; }
+  .reveal h1 { font-size: 2.2em; color: var(--red); }
+  .reveal h2 { font-size: 1.6em; color: #fff; border-bottom: 2px solid var(--red); padding-bottom: 10px; }
+  .reveal h3 { font-size: 1.2em; color: #ccc; }
+  .reveal .slide-number { font-size: 14px; }
+  .reveal table { font-size: 0.75em; margin: 0 auto; }
+  .reveal table th { background: var(--red); color: #fff; padding: 8px 14px; }
+  .reveal table td { padding: 6px 14px; border-bottom: 1px solid #444; }
+  .reveal pre { font-size: 0.65em; }
+  .reveal code { font-size: 0.9em; }
+  .reveal .slides section { text-align: left; }
+  .reveal .slides section.center { text-align: center; }
+  .reveal img.slide-img { max-height: 55vh; border: none; box-shadow: none; background: transparent; }
+  .badge-red { background: var(--red); color: #fff; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 0.8em; }
+  .badge-green { background: var(--green); color: #fff; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 0.8em; }
+  .badge-blue { background: var(--blue); color: #fff; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 0.8em; }
+  .badge-yellow { background: var(--yellow); color: #000; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 0.8em; }
+  .demo-indicator { background: var(--orange); color: #fff; padding: 6px 16px; border-radius: 6px; font-size: 0.9em; display: inline-block; margin-top: 10px; }
+  .key-message { border-left: 4px solid var(--red); padding: 15px 20px; background: rgba(204,0,0,0.1); margin: 15px 0; font-style: italic; }
+  .two-col { display: flex; gap: 30px; }
+  .two-col > div { flex: 1; }
+  .fragment.highlight-red.visible { color: var(--red); }
+  .rh-footer { position: fixed; bottom: 10px; right: 20px; font-size: 12px; color: #666; }
+  ul { margin-left: 0; }
+  li { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================ -->
+<!-- TITLE -->
+<!-- ============================================================ -->
+<section class="center" data-background-color="#0e0e1a">
+  <h1 style="font-size:1.8em">Dimensionamento e Scaling<br>de Aplicacoes no OpenShift</h1>
+  <p style="color:#999; margin-top:30px;">Workshop Energisa | Red Hat</p>
+  <p style="color:#666; font-size:0.7em; margin-top:40px;">Pressione <kbd style="background:#333;padding:2px 8px;border-radius:3px">S</kbd> para ver as notas do apresentador<br>
+  Use as <kbd style="background:#333;padding:2px 8px;border-radius:3px">setas</kbd> para navegar</p>
+  <aside class="notes">
+    Bom dia a todos. Esse workshop tem como objetivo mostrar na pratica como dimensionar corretamente aplicacoes no OpenShift,
+    evitando desperdicio de recursos e garantindo que autoscaling funcione de verdade.
+    Vamos comecar com um pouco de contexto historico para entender de onde viemos.
+  </aside>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 0 - EVOLUCAO DOS RECURSOS COMPUTACIONAIS -->
+<!-- ============================================================ -->
+<section>
+  <section class="center">
+    <h2>Recursos Computacionais</h2>
+    <h3>A Evolucao</h3>
+    <aside class="notes">
+      Antes de falar de Kubernetes e OpenShift, vamos relembrar como chegamos ate aqui.
+      A historia dos recursos computacionais passa por varias fases, e cada uma trouxe avancos e novos problemas.
+    </aside>
+  </section>
+
+  <section class="center">
+    <img src="images/01-old-way-single.png" class="slide-img" alt="The old way - single app">
+    <aside class="notes">
+      Como era antes? Ate mesmo antes da virtualizacao.
+      Voce tinha na sua infra um servidor com sua CPU e memoria, o sistema operacional, e a sua aplicacao rodava em cima desse SO e HW.
+      Qual era o problema aqui? Se voce tivesse uma aplicacao que nao estivesse usando todo o HW, voce tinha um desperdicio dos recursos computacionais.
+      Entao voce precisava otimizar o uso desses recursos.
+    </aside>
+  </section>
+
+  <section class="center">
+    <img src="images/02-old-way-multi.png" class="slide-img" alt="The old way - multiple apps">
+    <aside class="notes">
+      Como comecou a otimizar? Colocar mais de uma aplicacao no mesmo servidor.
+      Qual o problema disso? Uma aplicacao tinha acesso as mesmas coisas que as outras.
+      Alem disso, a Aplicacao A pode consumir recursos da Aplicacao B e gerar perda de performance de ambas.
+      Voce tinha melhor aproveitamento do HW, mas nao tinha isolamento entre as aplicacoes.
+    </aside>
+  </section>
+
+  <section class="center">
+    <img src="images/03-virtualization.png" class="slide-img" alt="Virtualization">
+    <aside class="notes">
+      Qual foi a primeira solucao que apareceu? Virtualizacao.
+      Voce passa a ter ambientes segregados, onde nesta maquina virtual voce tem um sistema operacional e suas bibliotecas especificas para aquela aplicacao.
+      E voce consegue isolar todos os recursos computacionais para aquela aplicacao, bem como limitar a quantidade de HW.
+      Mas isso ainda gera problemas. Por que? Voce ainda tem um overhead de ter outro SO.
+      O hypervisor nada mais e do que outro SO, e voce acaba tendo essa sobreposicao -- um SO em cima do outro. Nao e o melhor dos cenarios.
+    </aside>
+  </section>
+
+  <section class="center">
+    <img src="images/04-cgroups.png" class="slide-img" alt="cgroups">
+    <aside class="notes">
+      A proxima evolucao: cgroups. Isolamento e limites de recursos por aplicacao, no mesmo sistema operacional.
+      Voce usa o SO diretamente no HW fisico, isolando suas aplicacoes, mas ainda compartilhando as bibliotecas.
+      O que sao cgroups? Um recurso do kernel Linux que limita, contabiliza e isola o uso de CPU, memoria, IO de disco e rede de um conjunto de processos.
+      Os cgroups sao um componente-chave dos containers -- e e por isso que conseguimos implementar requests e limits no Kubernetes.
+      Basicamente, cgroups sao o mecanismo que permite ao Kubernetes controlar quanto de CPU e memoria cada container pode usar.
+    </aside>
+  </section>
+
+  <section class="center">
+    <img src="images/05-containers.png" class="slide-img" alt="Containers - cgroups + namespaces">
+    <aside class="notes">
+      Entao comecamos a usar cgroups mais namespaces do Linux. Namespaces sao um recurso do kernel que particiona
+      os recursos de forma que um conjunto de processos ve um conjunto de recursos, enquanto outro conjunto ve um conjunto diferente.
+      Aqui, com os containers, ja conseguimos manter as bibliotecas isoladas e customizadas por aplicacao.
+      Cada container tem seu proprio filesystem, sua rede, seus processos. Isolamento completo, sem o overhead de uma VM inteira.
+    </aside>
+  </section>
+
+  <section class="center">
+    <img src="images/06-container-virtualization.png" class="slide-img" alt="Container + Virtualization">
+    <aside class="notes">
+      Hoje em dia, trabalhamos com o melhor dos dois mundos: containers rodando dentro de VMs.
+      No slide anterior, ainda usamos a infra inteira do no. Se ocorrer um incidente como um bug de kernel, pode onerar o no todo.
+      Desse jeito, voce cria maquinas virtuais especificas e customizadas, e coloca suas aplicacoes ali.
+      E onde entra o Kubernetes e o OpenShift -- orquestrando tudo isso: recursos computacionais, nos, containers.
+      E e exatamente sobre como configurar corretamente esses recursos que vamos falar agora.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 1 - O PROBLEMA REAL -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Parte 1 -- O Problema Real</h2>
+    <p style="color:#999;">~10 minutos</p>
+    <aside class="notes">
+      Agora que contextualizamos a evolucao, vamos falar do problema concreto que vemos no dia a dia dos clusters.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Padroes que se repetem</h2>
+    <div class="fragment">
+      <p><span class="badge-red">Tipo 1</span> Requests de CPU inflados</p>
+      <p style="color:#999;font-size:0.85em;">Deployments pedem 300m, 500m, ate 1000m. Uso real: 1m a 10m. Reservando 50x a 100x mais.</p>
+    </div>
+    <div class="fragment">
+      <p><span class="badge-red">Tipo 2</span> Requests = Limits (QoS Guaranteed)</p>
+      <p style="color:#999;font-size:0.85em;">Impede o Kubernetes de reaproveitar recursos ociosos. Faz sentido para bancos de dados, nao para microservicos.</p>
+    </div>
+    <div class="fragment">
+      <p><span class="badge-red">Tipo 3</span> Multiplicacao do problema</p>
+      <p style="color:#999;font-size:0.85em;">50 microservicos x 300m de request cada = 15 vCPUs reservadas. Uso real: 250m.</p>
+    </div>
+    <aside class="notes">
+      Analisando clusters reais, identificamos padroes que se repetem em praticamente todos os clientes.
+      Nao vou apontar nomes -- o objetivo nao e auditar ninguem, e mostrar oportunidades de melhoria.
+      O impacto disso e concreto: o scheduler acha que os nodes estao cheios e pede mais nodes.
+      O HPA nunca dispara. O cluster precisa de mais capacidade, mais subscricoes, mais custo -- para rodar a mesma carga.
+    </aside>
+  </section>
+
+  <section>
+    <h2>O impacto concreto</h2>
+    <ul>
+      <li>O scheduler acha que os nodes estao <strong>cheios</strong></li>
+      <li>O HPA <strong>nunca dispara</strong> -- o denominador (request) e gigante</li>
+      <li>O cluster pede mais nodes = <strong>mais custo</strong></li>
+      <li>Pods ficam em <strong>Pending</strong> por "Insufficient cpu" com nodes ociosos</li>
+    </ul>
+    <div class="key-message fragment">
+      Isso nao e culpa de ninguem. E um padrao comum. A mentalidade de "coloca recursos altos pra nao dar problema"
+      faz sentido para quem desenvolve, mas tem um custo real na plataforma.
+    </div>
+    <aside class="notes">
+      E exatamente isso que vamos resolver hoje. Vou mostrar na pratica o que acontece, como identificar, e como corrigir.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 2 - FUNDAMENTOS TECNICOS -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Parte 2 -- Fundamentos Tecnicos</h2>
+    <p style="color:#999;">~20 minutos</p>
+  </section>
+
+  <section>
+    <h2>Scheduler vs Runtime</h2>
+    <div class="two-col">
+      <div>
+        <h3><span class="badge-blue">Scheduler</span></h3>
+        <ul>
+          <li>Decide <strong>onde</strong> o pod roda</li>
+          <li>Olha os <strong>requests</strong></li>
+          <li>Requests = <strong>reserva</strong></li>
+          <li>Nao sabe o uso real</li>
+        </ul>
+      </div>
+      <div>
+        <h3><span class="badge-yellow">Runtime (kubelet)</span></h3>
+        <ul>
+          <li>Controla <strong>o consumo</strong></li>
+          <li>Olha os <strong>limits</strong></li>
+          <li>Limits = <strong>teto</strong></li>
+          <li>Usa cgroups para impor</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">
+      Para entender o problema, precisamos entender dois momentos distintos.
+      Primeiro, o Scheduler. Quando voce cria um Deployment, ele olha os requests e procura um node com capacidade.
+      Segundo, o Runtime -- kubelet e cgroups. Depois que o pod esta rodando, quem controla e o kubelet.
+      Se o pod ultrapassar o limit de CPU, e throttled. Se ultrapassar memoria, e OOMKilled.
+    </aside>
+  </section>
+
+  <section>
+    <h2>CPU vs Memoria</h2>
+    <table>
+      <thead><tr><th>Aspecto</th><th>CPU</th><th>Memoria</th></tr></thead>
+      <tbody>
+        <tr><td>Tipo</td><td><span class="badge-green">Compressivel</span></td><td><span class="badge-red">Incompressivel</span></td></tr>
+        <tr><td>No limit</td><td>Throttling (mais lento)</td><td>OOMKill (morto)</td></tr>
+        <tr><td>Pod sobrevive?</td><td>Sim</td><td>Nao</td></tr>
+        <tr><td>Kernel toma de volta?</td><td>Sim, reduz ciclos</td><td>Nao, mata o processo</td></tr>
+        <tr><td>Impacto no usuario</td><td>Latencia maior</td><td>Erro 500 / conexao perdida</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      CPU e compressivel -- o kernel limita ciclos sem matar. O pod fica lento mas continua vivo.
+      Memoria e incompressivel -- uma vez alocada, o kernel nao toma de volta sem matar.
+      Essa diferenca e critica para entender por que o HPA funciona para CPU mas nao para memoria.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Requests, Limits e QoS</h2>
+    <table>
+      <thead><tr><th></th><th>Guaranteed</th><th>Burstable</th><th>BestEffort</th></tr></thead>
+      <tbody>
+        <tr><td>Configuracao</td><td>req = limit</td><td>req &lt; limit</td><td>nenhum</td></tr>
+        <tr><td>Burst?</td><td>Nao</td><td>Sim</td><td>Ilimitado</td></tr>
+        <tr><td>Eviction</td><td>Ultimo</td><td>Medio</td><td>Primeiro</td></tr>
+        <tr><td>Ideal para</td><td>DB, Kafka</td><td>Microservicos</td><td>Jobs descartaveis</td></tr>
+        <tr><td>HPA funciona?</td><td>Quase impossivel</td><td>Sim</td><td>N/A</td></tr>
+      </tbody>
+    </table>
+    <div class="key-message fragment">
+      Guaranteed nao significa "garante mais recursos". Significa que o pod tem um contrato fixo --
+      nunca consome mais nem menos. Em troca, e o ultimo a ser removido sob pressao.
+    </div>
+    <aside class="notes">
+      O Kubernetes atribui automaticamente uma classe de QoS baseada na relacao entre requests e limits.
+      Guaranteed tranca recursos. Burstable permite burst. Para microservicos, Burstable e quase sempre o caminho certo.
+      Analogia: Guaranteed e reservar uma mesa de 10 lugares para jantar sozinho.
+      Burstable e reservar 1 lugar e usar as cadeiras ao lado se estiverem vazias.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Comparacao direta</h2>
+    <table>
+      <thead><tr><th>Aspecto</th><th style="color:#f44336">Guaranteed (2000m/2000m)</th><th style="color:#4caf50">Burstable (50m/200m)</th></tr></thead>
+      <tbody>
+        <tr><td>Reserva no scheduler</td><td>2000m (2 vCPUs)</td><td>50m</td></tr>
+        <tr><td>Maximo que pode usar</td><td>2000m</td><td>200m</td></tr>
+        <tr><td>Pods num node 8 vCPU</td><td>~4</td><td>~160</td></tr>
+        <tr><td>CPU desperdicada idle</td><td>~1995m trancados</td><td>~45m trancados</td></tr>
+        <tr><td>HPA funciona?</td><td>Quase impossivel</td><td>Sim</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Esses sao exatamente os nossos dois apps de demonstracao. app-ruim com 2000m/2000m e app-bom com 50m/200m.
+      O mesmo teto de seguranca pode ser atingido com Burstable -- a diferenca e que nao tranca recursos no scheduler.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Os manifestos dos nossos apps</h2>
+    <div class="demo-indicator">DEMO -- Abrir terminal</div>
+    <div class="two-col" style="margin-top:20px;">
+      <div>
+        <h3 style="color:#f44336">app-ruim</h3>
+        <pre><code class="yaml">resources:
+  requests:
+    cpu: "2"
+    memory: 2Gi
+  limits:
+    cpu: "2"
+    memory: 2Gi</code></pre>
+        <p style="font-size:0.75em;color:#f44336">QoS: Guaranteed | HPA: morto</p>
+      </div>
+      <div>
+        <h3 style="color:#4caf50">app-bom</h3>
+        <pre><code class="yaml">resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi</code></pre>
+        <p style="font-size:0.75em;color:#4caf50">QoS: Burstable | HPA: funcional</p>
+      </div>
+    </div>
+    <aside class="notes">
+      Vamos olhar no terminal. Dois namespaces: app-ruim e app-bom. Mesma aplicacao, mesma imagem. A unica diferenca sao os recursos.
+      Executar: oc get deployment stress-app -n app-ruim -o yaml | grep -A 8 resources
+      E depois: oc get deployment stress-app -n app-bom -o yaml | grep -A 8 resources
+    </aside>
+  </section>
+
+  <section>
+    <h2>Vendo no Resource Dashboard</h2>
+    <div class="demo-indicator">DEMO -- Abrir Resource Dashboard</div>
+    <ul style="margin-top:20px;">
+      <li><span style="color:#f44336">Lado esquerdo (vermelho)</span>: app-ruim -- uso real ~0%, requests ocupam tudo</li>
+      <li><span style="color:#4caf50">Lado direito (verde)</span>: app-bom -- proporcao saudavel</li>
+      <li>HPA do app-ruim: 0% de CPU. Target 70% = 1400m. <strong>Nunca vai disparar.</strong></li>
+      <li>HPA do app-bom: 2% de CPU. Target 70% = 35m. <strong>Vai funcionar.</strong></li>
+    </ul>
+    <aside class="notes">
+      Abrir o Resource Dashboard. Mostrar os dois lados.
+      Apontar para o CPU atual dos dois: 0% no ruim, 2% no bom.
+      Explicar: os dois consomem o mesmo CPU absoluto em idle (~1m). A diferenca e o denominador.
+      1m / 2000m = 0%. 1m / 50m = 2%. O HPA trabalha com essa porcentagem.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 3 - AUTOSCALING AO VIVO -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Parte 3 -- Autoscaling ao Vivo</h2>
+    <p style="color:#999;">~25 minutos</p>
+    <div class="demo-indicator">DEMO INTERATIVA</div>
+  </section>
+
+  <section>
+    <h2>Gerando carga no app-bom</h2>
+    <div class="demo-indicator">DEMO -- Stress App app-bom</div>
+    <ol style="margin-top:20px;">
+      <li>Abrir Stress App do app-bom</li>
+      <li>Clicar em <strong>"120s - Moderado"</strong></li>
+      <li>Voltar ao Dashboard -- observar CPU subindo</li>
+      <li>HPA detecta carga &gt; 70% e escala</li>
+      <li>Novas replicas aparecem</li>
+    </ol>
+    <div class="key-message fragment">
+      Isso e autoscaling funcionando de verdade. Requests corretos = HPA funcional.
+    </div>
+    <aside class="notes">
+      Disparar 2 minutos de carga moderada no app-bom. Voltar ao dashboard e observar.
+      A CPU sobe, ultrapassa 70% do request (35m), e o HPA escala.
+      Se perguntarem por que so um pod mostra CPU alta: o teste gera carga internamente no pod.
+      Nao e trafego distribuido. Em producao, o Route distribui entre replicas.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Gerando carga no app-ruim</h2>
+    <div class="demo-indicator">DEMO -- Stress App app-ruim</div>
+    <ol style="margin-top:20px;">
+      <li>Mesma carga, mesma aplicacao</li>
+      <li>CPU sobe em milicores...</li>
+      <li>Mas a <strong>porcentagem</strong> fica ridicularmente baixa</li>
+      <li>HPA ve 5%, 10%... longe dos 70%</li>
+      <li><strong>Zero replicas novas</strong></li>
+    </ol>
+    <div class="key-message fragment">
+      Mesma aplicacao. Mesma carga. Mesmo HPA. A unica diferenca sao os requests.
+      Esse e exatamente o cenario que acontece em clusters reais.
+    </div>
+    <aside class="notes">
+      Mesma coisa no app-ruim. Mesma carga, mas o request e 2000m.
+      A porcentagem de CPU nunca chega perto de 70% (que seria 1400m!).
+      O HPA esta efetivamente morto.
+    </aside>
+  </section>
+
+  <section>
+    <h2>OOMKill -- Limits de Memoria</h2>
+    <div class="demo-indicator">DEMO -- Stress App</div>
+    <ul style="margin-top:20px;">
+      <li>Memoria e <strong>incompressivel</strong> -- nao tem throttle, tem OOMKill</li>
+      <li>Alocar memoria progressivamente com <strong>+64 MB</strong></li>
+      <li>Observar a barra: verde &rarr; amarela &rarr; vermelha pulsando</li>
+      <li>No limit: <strong>OOMKilled</strong> -- pod reiniciado</li>
+    </ul>
+    <aside class="notes">
+      No app-ruim, limit de 2Gi. Clicar em +64MB repetidamente ate estourar.
+      No app-bom, limit de 256Mi. Mostrar que com menos alocacao ja fica na zona vermelha.
+      O ponto: limits protegem o node. Requests dimensionados corretamente + limits com margem = configuracao ideal.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 4 - OBSERVABILIDADE -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Parte 4 -- Observabilidade</h2>
+    <p style="color:#999;">~10 minutos</p>
+    <div class="demo-indicator">DEMO -- CLI + Console OpenShift</div>
+  </section>
+
+  <section>
+    <h2>CLI -- Comandos essenciais</h2>
+    <pre><code class="bash"># Uso real de CPU/memoria
+oc adm top pods -n app-bom
+oc adm top pods -n app-ruim
+
+# Status do HPA
+oc get hpa -n app-bom
+oc get hpa -n app-ruim
+
+# Alocacao do node (requests acumulados)
+oc describe node | grep -A 5 "Allocated resources"</code></pre>
+    <aside class="notes">
+      Mostrar esses comandos no terminal/Web Terminal.
+      O ponto critico e o Allocated resources -- mostra a soma dos requests de todos os pods no node.
+      Quanto mais inflado, mais rapido o node "lota" na visao do scheduler.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Console -- Dashboards nativos</h2>
+    <div class="demo-indicator">DEMO -- OpenShift Console &gt; Observe &gt; Dashboards</div>
+    <ul style="margin-top:20px;">
+      <li><strong>Kubernetes / Compute Resources / Namespace (Pods)</strong></li>
+      <li>CPU Usage -- consumo real ao longo do tempo</li>
+      <li>CPU Quota -- uso vs requests vs limits (folga de burst)</li>
+      <li>Memory Usage -- consumo de memoria</li>
+      <li>Selecionar app-bom, depois app-ruim -- comparar visualmente</li>
+    </ul>
+    <div class="key-message fragment">
+      Esses dashboards ja existem no cluster. Nao precisa instalar nada.
+      Use-os periodicamente para identificar desperdicio.
+    </div>
+    <aside class="notes">
+      Navegar para Observe > Dashboards > Kubernetes / Compute Resources / Namespace (Pods).
+      Selecionar app-bom primeiro, depois app-ruim. Mostrar a diferenca visual.
+      Tambem mostrar o dashboard de Cluster para a visao geral.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 5 - HPA -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>HPA -- Horizontal Pod Autoscaler</h2>
+    <p style="color:#999;">Conceitos-chave</p>
+  </section>
+
+  <section>
+    <h2>A formula do HPA</h2>
+    <pre style="font-size:0.9em;text-align:center;background:#222;padding:20px;border-radius:8px;"><code>replicas = ceil( atuais x (metrica_atual / metrica_target) )</code></pre>
+    <table style="margin-top:20px;">
+      <thead><tr><th>Cenario</th><th>Request</th><th>Uso real</th><th>%</th><th>HPA dispara?</th></tr></thead>
+      <tbody>
+        <tr style="color:#4caf50"><td>app-bom</td><td>50m</td><td>80m</td><td>160%</td><td>Sim (3 replicas)</td></tr>
+        <tr style="color:#f44336"><td>app-ruim</td><td>2000m</td><td>80m</td><td>4%</td><td>Nao</td></tr>
+      </tbody>
+    </table>
+    <div class="key-message fragment">
+      O request e o denominador. Se e gigante, a porcentagem nunca sobe.
+    </div>
+    <aside class="notes">
+      A formula e simples: uso dividido por request = porcentagem.
+      O HPA calcula sobre o request, NAO sobre o limit.
+      Com request de 50m, 80m de uso da 160%. Com request de 2000m, da 4%.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Por que NAO usar HPA para memoria?</h2>
+    <ol>
+      <li>Carga sobe &rarr; pod aloca memoria &rarr; HPA escala</li>
+      <li>Carga diminui &rarr; pods <strong>nao liberam memoria</strong> (GC nao devolve ao SO)</li>
+      <li>HPA calcula que ainda precisa das replicas (% continua alta)</li>
+      <li>Replicas nunca sao removidas &rarr; HPA <strong>travado</strong></li>
+    </ol>
+    <div class="key-message fragment">
+      CPU e compressivel -- o kernel faz throttle e libera. Funciona com HPA.<br>
+      Memoria e incompressivel -- uma vez alocada, nao volta. Use VPA.
+    </div>
+    <aside class="notes">
+      Memoria e incompressivel. O garbage collector nao devolve memoria ao SO quando a carga diminui.
+      Por isso o HPA para memoria fica travado -- as replicas nunca sao removidas.
+      Para memoria, a solucao e o VPA.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 5B - VPA -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Parte 5 -- VPA</h2>
+    <h3>Descobrindo os valores certos</h3>
+    <p style="color:#999;">~15 minutos</p>
+  </section>
+
+  <section>
+    <h2>O que e o VPA</h2>
+    <div class="key-message">
+      O VPA observa o comportamento real da aplicacao ao longo de dias e <strong>recomenda</strong>
+      os valores ideais de CPU e memoria. Transforma o "chute" em decisao baseada em dados.
+    </div>
+    <table style="margin-top:20px;">
+      <thead><tr><th>Componente</th><th>Funcao</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Recommender</strong></td><td>Calcula recomendacoes baseado em metricas</td></tr>
+        <tr><td><strong>Updater</strong></td><td>Marca pods para reinicio (modos Auto/Recreate)</td></tr>
+        <tr><td><strong>Admission Controller</strong></td><td>Injeta valores em novos pods</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      O VPA responde a pergunta: qual o valor certo?
+      Em vez de chutar requests e limits, voce coleta dados reais por dias e usa as recomendacoes.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Simulador de Carga</h2>
+    <div class="demo-indicator">DEMO -- Abrir Simulador de Carga</div>
+    <ul style="margin-top:20px;">
+      <li>Aplicacao rodando ha dias com carga oscilante</li>
+      <li>60 min pico (~65 usuarios) + 60 min fora de pico (~10 usuarios)</li>
+      <li>VPA em modo <strong>Off</strong> -- apenas observando</li>
+      <li>Configurada com 1000m CPU / 1Gi memoria (propositalmente inflado)</li>
+    </ul>
+    <aside class="notes">
+      Abrir o Simulador de Carga. Mostrar o grafico oscilando.
+      Depois, no terminal, mostrar os resources atuais e as recomendacoes do VPA.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Recomendacoes do VPA</h2>
+    <div class="demo-indicator">DEMO -- Terminal: oc describe vpa</div>
+    <table style="margin-top:20px;">
+      <thead><tr><th>Campo</th><th>Significado</th><th>Uso pratico</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Target</strong></td><td>Valor ideal (p90)</td><td>Use como <strong>requests</strong></td></tr>
+        <tr><td><strong>Lower Bound</strong></td><td>Minimo seguro</td><td>Nunca va abaixo disso</td></tr>
+        <tr><td><strong>Upper Bound</strong></td><td>Picos observados</td><td>Referencia para <strong>limits</strong></td></tr>
+        <tr><td><strong>Uncapped Target</strong></td><td>Target sem restricoes</td><td>Diagnostico do resourcePolicy</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Usar o botao Copiar no Simulador de Carga ou executar diretamente:
+      oc describe vpa vpa-workload-simulator -n vpa-demo | grep -A 20 "Container Recommendations"
+      Comparar os valores recomendados com os 1000m/1Gi configurados.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Modos do VPA</h2>
+    <table>
+      <thead><tr><th>Modo</th><th>Comportamento</th><th>Risco</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge-green">Off</span></td><td>Apenas recomenda</td><td>Zero</td></tr>
+        <tr><td><span class="badge-blue">Initial</span></td><td>Aplica em novos pods</td><td>Baixo</td></tr>
+        <tr><td><span class="badge-yellow">Auto</span></td><td>Aplica e reinicia pods</td><td>Medio (use PDB)</td></tr>
+      </tbody>
+    </table>
+    <div class="key-message fragment">
+      Comece sempre com Off. Colete dados por 7 dias. Analise. Depois avance.
+    </div>
+    <aside class="notes">
+      O VPA em modo Off e uma ferramenta de auditoria. Mostra onde esta o desperdicio sem alterar nada.
+      VPA + HPA se complementam: VPA descobre o tamanho certo, HPA escala horizontalmente com esses valores.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 6 - BOAS PRATICAS -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Parte 6 -- Boas Praticas</h2>
+  </section>
+
+  <section>
+    <h2>Regras de ouro</h2>
+    <ol>
+      <li><strong>Requests = uso medio observado</strong> (p50-p75)</li>
+      <li><strong>Limits de CPU = 2x a 4x</strong> o request (margem de burst)</li>
+      <li><strong>Limits de memoria = 1.5x a 2x</strong> o request (OOMKill e destrutivo)</li>
+      <li><strong>Nunca requests = limits</strong> exceto para workloads criticos stateful</li>
+      <li><strong>Use VPA modo Off</strong> para calibrar com dados reais</li>
+      <li><strong>Defina LimitRanges</strong> para impedir configuracoes extremas</li>
+      <li><strong>Monitore continuamente</strong> com dashboards nativos</li>
+    </ol>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 7 - ROUTE VS SERVICE -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Parte 7 -- Route vs Service</h2>
+    <h3>Comunicacao interna</h3>
+    <p style="color:#999;">~10 minutos</p>
+    <div class="demo-indicator">DEMO INTERATIVA</div>
+  </section>
+
+  <section>
+    <h2>O anti-pattern</h2>
+    <div class="two-col">
+      <div>
+        <h3 style="color:#f44336">Via Route (errado)</h3>
+        <p style="font-size:0.75em;">Pod A &rarr; Router HAProxy &rarr; DNS externo &rarr; TLS &rarr; Router &rarr; Pod B</p>
+        <p><strong>6 hops | ~20ms</strong></p>
+      </div>
+      <div>
+        <h3 style="color:#4caf50">Via Service (correto)</h3>
+        <p style="font-size:0.75em;">Pod A &rarr; OVN/cluster SDN &rarr; Pod B</p>
+        <p><strong>2 hops | ~5ms</strong></p>
+      </div>
+    </div>
+    <table style="margin-top:20px;font-size:0.75em;">
+      <thead><tr><th>Cenario</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td>Acesso externo (browsers, APIs publicas)</td><td><strong>Route</strong></td></tr>
+        <tr><td>Entre pods no mesmo namespace</td><td><strong>Service</strong> (nome:porta)</td></tr>
+        <tr><td>Entre pods em namespaces diferentes</td><td><strong>Service</strong> (nome.ns.svc.cluster.local:porta)</td></tr>
+      </tbody>
+    </table>
+    <div class="key-message fragment">
+      Route e a porta de entrada. Nao o corredor interno.
+    </div>
+    <aside class="notes">
+      Outro anti-pattern comum: apps se comunicando entre namespaces usando a URL da Route.
+      Demonstrar nos stress-apps: Via Route no app-ruim (~20ms) vs Via Service no app-bom (~5ms).
+      2x a 3x mais lento. Em producao com centenas de microsservicos, cada chamada via Route adiciona carga no Router.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 8 - GITOPS E POLICIES -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Parte 8 -- Protegendo o Cluster</h2>
+    <h3>GitOps + Policies</h3>
+    <p style="color:#999;">~15 minutos</p>
+  </section>
+
+  <section>
+    <h2>Tres camadas de protecao</h2>
+    <table>
+      <thead><tr><th>Camada</th><th>Ferramenta</th><th>Responsabilidade</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge-blue">CI</span></td><td>Tekton Pipelines</td><td>Padroniza o build</td></tr>
+        <tr><td><span class="badge-green">CD</span></td><td>Argo CD (GitOps)</td><td>Git e a fonte de verdade</td></tr>
+        <tr><td><span class="badge-yellow">Governanca</span></td><td>ACM Policies</td><td>Audita e reporta violacoes</td></tr>
+      </tbody>
+    </table>
+    <div class="key-message fragment">
+      Pipeline padroniza o build. GitOps protege o deploy. Policies garantem conformidade.
+      Tres camadas, zero "oc edit".
+    </div>
+    <aside class="notes">
+      Cada camada tem uma responsabilidade. Juntas, formam uma defesa em profundidade.
+      Dev entrega codigo, pipeline cria imagem, ArgoCD deploya do Git, ACM audita.
+    </aside>
+  </section>
+
+  <section>
+    <h2>ACM Governance -- Policies</h2>
+    <div class="demo-indicator">DEMO -- ACM Console &gt; Governance</div>
+    <table style="margin-top:20px;font-size:0.8em;">
+      <thead><tr><th>Policy</th><th>Status</th><th>Quem viola</th></tr></thead>
+      <tbody>
+        <tr><td>policy-resource-ceiling</td><td><span class="badge-red">NonCompliant</span></td><td>app-ruim (2 CPU &gt; teto 1 CPU)</td></tr>
+        <tr><td>policy-required-labels</td><td><span class="badge-red">NonCompliant</span></td><td>app-ruim (faltam labels)</td></tr>
+        <tr><td>policy-no-guaranteed-stateless</td><td><span class="badge-red">NonCompliant</span></td><td>app-ruim (req = lim)</td></tr>
+      </tbody>
+    </table>
+    <aside class="notes">
+      Abrir ACM Console > Governance > Policies. Mostrar as 3 policies.
+      Clicar em cada uma e mostrar qual cluster, namespace e recurso esta violando.
+      A policy nao pune -- ela ilumina. Sem policies, ninguem sabe que tem problema.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Correcao via GitOps</h2>
+    <div class="demo-indicator">DEMO -- Git commit + Argo CD sync</div>
+    <ol style="margin-top:20px;">
+      <li>Corrigir labels no Git (<code>gitops/app-bom/deployment.yaml</code>)</li>
+      <li>Commit e push</li>
+      <li>Argo CD sincroniza automaticamente</li>
+      <li>ACM: app-bom fica <span class="badge-green">Compliant</span></li>
+    </ol>
+    <div class="key-message fragment">
+      A correcao veio pelo Git. Ninguem fez "oc edit".
+      O Git e a fonte de verdade e a policy validou automaticamente.
+    </div>
+    <aside class="notes">
+      Demonstrar: editar o deployment no Git, adicionar labels, commit e push.
+      Mostrar no ArgoCD o sync. Voltar ao ACM e mostrar que app-bom ficou Compliant.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Argo CD selfHeal</h2>
+    <div class="demo-indicator">DEMO -- Delete + auto-recovery</div>
+    <ol style="margin-top:20px;">
+      <li>Mostrar que app-bom esta Synced e Healthy no ArgoCD</li>
+      <li>Simular acidente: <code>oc delete route stress-app -n app-bom</code></li>
+      <li>ArgoCD detecta drift e <strong>recria automaticamente</strong></li>
+      <li>Status volta para Synced + Healthy</li>
+    </ol>
+    <div class="key-message fragment">
+      Mesmo que alguem com cluster-admin apague recursos, o ArgoCD restaura baseado no Git.
+      Se um script destrutivo fosse executado num cluster com GitOps, os recursos voltariam automaticamente.
+    </div>
+    <aside class="notes">
+      Essa demo conecta com o incidente real do cliente -- script com oc delete que quebrou o cluster.
+      Deletar um recurso, aguardar 10-30 segundos, mostrar o ArgoCD restaurando.
+      Narrativa: com GitOps, isso nao teria causado downtime permanente.
+    </aside>
+  </section>
+</section>
+
+<!-- ============================================================ -->
+<!-- PART 9 - FECHAMENTO -->
+<!-- ============================================================ -->
+<section>
+  <section>
+    <h2>Fechamento</h2>
+    <h3>Proximos passos</h3>
+  </section>
+
+  <section>
+    <h2>O que vimos hoje</h2>
+    <ul>
+      <li><strong>Por que acontece</strong> -- requests inflados reservam recursos que nunca sao usados</li>
+      <li><strong>O impacto real</strong> -- HPA travado, nodes "cheios" com uso de 5%, custo desnecessario</li>
+      <li><strong>Como corrigir</strong> -- requests reais, limits com margem, QoS Burstable</li>
+      <li><strong>Como descobrir os valores certos</strong> -- VPA modo Off por 7 dias</li>
+      <li><strong>Como monitorar</strong> -- dashboards nativos do OpenShift</li>
+      <li><strong>Como proteger</strong> -- GitOps + Policies = automacao, nao documentacao</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Proximos passos concretos</h2>
+    <ol>
+      <li><strong>Deployar VPA modo Off</strong> nos projetos criticos</li>
+      <li><strong>Coletar metricas por 7 dias</strong> sem alterar nada</li>
+      <li><strong>Analisar recomendacoes</strong> vs valores atuais</li>
+      <li><strong>Ajustar gradualmente</strong> -- comecando pelo maior desperdicio</li>
+      <li><strong>Revisar comunicacao entre namespaces</strong> -- Routes vs Services</li>
+    </ol>
+    <div class="key-message fragment">
+      Nao e um projeto de meses. E uma mudanca de configuracao, deployment por deployment,
+      com dados concretos guiando cada decisao.
+    </div>
+  </section>
+
+  <section class="center">
+    <h1 style="font-size:2em">Obrigado!</h1>
+    <p style="margin-top:30px;color:#999;">Perguntas?</p>
+  </section>
+</section>
+
+</div><!-- .slides -->
+</div><!-- .reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  showSlideNumber: 'all',
+  transition: 'slide',
+  transitionSpeed: 'fast',
+  controlsTutorial: false,
+  progress: true,
+  center: false,
+  width: 1280,
+  height: 720,
+  margin: 0.05,
+  plugins: [ RevealNotes, RevealHighlight ]
+});
+</script>
+</body>
+</html>

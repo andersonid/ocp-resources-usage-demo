@@ -1,0 +1,16 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: workshop-slides
+  namespace: workshop-slides
+  labels:
+    app: workshop-slides
+spec:
+  to:
+    kind: Service
+    name: workshop-slides
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

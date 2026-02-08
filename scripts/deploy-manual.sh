@@ -54,11 +54,12 @@ ensure_project() {
 
 create_projects() {
   log "--- Creating projects ---"
-  ensure_project "demo-builds"    "Demo - Builds"
-  ensure_project "app-bom"        "App Bom - Boas Praticas"
-  ensure_project "app-ruim"       "App Ruim - Anti-pattern"
-  ensure_project "demo-dashboard" "Demo - Dashboard"
-  ensure_project "vpa-demo"       "VPA Demo - Workload Simulator"
+  ensure_project "demo-builds"      "Demo - Builds"
+  ensure_project "app-bom"          "App Bom - Boas Praticas"
+  ensure_project "app-ruim"         "App Ruim - Anti-pattern"
+  ensure_project "demo-dashboard"   "Demo - Dashboard"
+  ensure_project "vpa-demo"         "VPA Demo - Workload Simulator"
+  ensure_project "workshop-slides"  "Workshop - Slide Deck"
 }
 
 # ---------------------------------------------------------------------------
@@ -81,6 +82,7 @@ create_build_configs() {
   ensure_build_config "stress-app"         "apps/stress-app"
   ensure_build_config "resource-dashboard" "apps/resource-dashboard"
   ensure_build_config "workload-simulator" "apps/workload-simulator"
+  ensure_build_config "workshop-slides"    "apps/workshop-slides"
 }
 
 # ---------------------------------------------------------------------------
@@ -98,6 +100,7 @@ build_all() {
   build_image "stress-app"         "apps/stress-app"
   build_image "resource-dashboard" "apps/resource-dashboard"
   build_image "workload-simulator" "apps/workload-simulator"
+  build_image "workshop-slides"    "apps/workshop-slides"
 }
 
 # ---------------------------------------------------------------------------
@@ -115,6 +118,7 @@ setup_image_pull() {
   allow_image_pull "app-ruim"
   allow_image_pull "demo-dashboard"
   allow_image_pull "vpa-demo"
+  allow_image_pull "workshop-slides"
 }
 
 # ---------------------------------------------------------------------------
@@ -316,7 +320,31 @@ EOVPA
 }
 
 # ---------------------------------------------------------------------------
-# 9. Print summary
+# 9. Deploy workshop-slides
+# ---------------------------------------------------------------------------
+deploy_workshop_slides() {
+  local ns="workshop-slides"
+  local image="$REGISTRY/$BUILD_NS/workshop-slides:latest"
+  log "--- Deploying workshop-slides to $ns ---"
+
+  if oc get deployment workshop-slides -n "$ns" > /dev/null 2>&1; then
+    log "Deployment already exists, restarting..."
+    oc rollout restart deployment/workshop-slides -n "$ns"
+  else
+    log "Creating deployment..."
+    oc create deployment workshop-slides --image="$image" -n "$ns"
+
+    oc set resources deployment/workshop-slides -n "$ns" \
+      --requests="cpu=10m,memory=64Mi" \
+      --limits="cpu=100m,memory=128Mi"
+
+    oc expose deployment/workshop-slides --port=8080 -n "$ns" 2>/dev/null || true
+    oc create route edge workshop-slides --service=workshop-slides -n "$ns" 2>/dev/null || true
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# 10. Print summary
 # ---------------------------------------------------------------------------
 print_summary() {
   echo ""
@@ -335,6 +363,9 @@ print_summary() {
   echo ""
   echo "  Workload Simulator:"
   echo "    https://workload-simulator-vpa-demo.$CLUSTER_DOMAIN"
+  echo ""
+  echo "  Workshop Slides:"
+  echo "    https://workshop-slides-workshop-slides.$CLUSTER_DOMAIN"
   echo ""
   echo "============================================================"
 }
@@ -359,6 +390,7 @@ main() {
   deploy_app_ruim
   deploy_dashboard
   deploy_workload_simulator
+  deploy_workshop_slides
   print_summary
 }
 
