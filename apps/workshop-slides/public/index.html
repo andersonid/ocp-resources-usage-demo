@@ -99,7 +99,55 @@
   </section>
 
   <section class="center">
-    <img src="images/01-old-way-single.png" class="slide-img" alt="The old way - single app">
+    <h3 style="margin-bottom:25px; color:#999;">O jeito antigo -- Uma aplicação por servidor</h3>
+    <div class="arch-stack" style="width:520px; margin:0 auto; position:relative;">
+
+      <!-- Userspace (App + Libs) -->
+      <div class="fragment fade-up" data-fragment-index="3" style="position:relative; z-index:3;">
+        <div style="background:linear-gradient(135deg,#1565c0,#1e88e5); border-radius:10px 10px 0 0; padding:0; margin-bottom:2px; border:2px solid #42a5f5; overflow:hidden;">
+          <div style="padding:10px 15px 6px; text-align:center; font-size:0.65em; color:#90caf9; text-transform:uppercase; letter-spacing:2px; border-bottom:1px solid rgba(255,255,255,0.15);">Userspace</div>
+          <div style="display:flex; align-items:center; justify-content:center; padding:20px 15px 18px; gap:15px;">
+            <div style="text-align:center;">
+              <div style="font-size:2.2em;">&#9881;</div>
+              <div style="font-size:0.85em; font-weight:bold; color:#fff; margin-top:4px;">Aplicação A</div>
+            </div>
+            <div style="color:rgba(255,255,255,0.3); font-size:1.4em;">+</div>
+            <div style="text-align:center;">
+              <div style="font-size:2.2em;">&#128218;</div>
+              <div style="font-size:0.85em; font-weight:bold; color:#fff; margin-top:4px;">Libs / Deps</div>
+            </div>
+          </div>
+        </div>
+        <div class="fragment fade-in" data-fragment-index="4" style="position:absolute; right:-220px; top:50%; transform:translateY(-50%); width:200px; text-align:left;">
+          <div style="font-size:0.7em; color:#f44336; border-left:3px solid #f44336; padding-left:10px;">
+            &#9888; Se a app usar<br>pouca CPU/RAM,<br><strong>o resto é desperdiçado</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Host Operating System -->
+      <div class="fragment fade-up" data-fragment-index="2">
+        <div style="background:linear-gradient(135deg,#2e7d32,#43a047); padding:14px 20px; margin-bottom:2px; border:2px solid #66bb6a; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.8em;">&#128421;</span>
+          <div>
+            <div style="font-size:0.95em; font-weight:bold; color:#fff;">Host Operating System</div>
+            <div style="font-size:0.7em; color:#c8e6c9;">Linux, Windows Server...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure -->
+      <div class="fragment fade-up" data-fragment-index="1">
+        <div style="background:linear-gradient(135deg,#555,#777); border-radius:0 0 10px 10px; padding:14px 20px; border:2px solid #999; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.8em;">&#127981;</span>
+          <div>
+            <div style="font-size:0.95em; font-weight:bold; color:#fff;">Infrastructure</div>
+            <div style="font-size:0.7em; color:#ccc;">CPU, RAM, Disco, Rede</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
     <aside class="notes">
       Como era antes? Até mesmo antes da virtualização.
       Você tinha na sua infra um servidor com sua CPU e memória, o sistema operacional, e a sua aplicação rodava em cima desse SO e HW.
