@@ -157,7 +157,76 @@
   </section>
 
   <section class="center">
-    <img src="images/02-old-way-multi.png" class="slide-img" alt="The old way - multiple apps">
+    <h3 style="margin-bottom:25px; color:#999;">Múltiplas aplicações -- Melhor uso, zero isolamento</h3>
+    <div class="arch-stack" style="width:520px; margin:0 auto; position:relative;">
+
+      <!-- Userspace com múltiplas apps -->
+      <div class="fragment fade-up" data-fragment-index="3" style="position:relative; z-index:3;">
+        <div style="background:linear-gradient(135deg,#1565c0,#1e88e5); border-radius:10px 10px 0 0; padding:0; margin-bottom:2px; border:2px solid #42a5f5; overflow:hidden;">
+          <div style="padding:10px 15px 6px; text-align:center; font-size:0.65em; color:#90caf9; text-transform:uppercase; letter-spacing:2px; border-bottom:1px solid rgba(255,255,255,0.15);">Userspace compartilhado</div>
+          <div style="display:flex; align-items:stretch; justify-content:center; padding:15px 10px; gap:0;">
+            <div style="text-align:center; flex:1; padding:8px;">
+              <div style="font-size:1.8em;">&#9881;</div>
+              <div style="font-size:0.75em; font-weight:bold; color:#fff;">App A</div>
+              <div style="font-size:0.6em; color:#90caf9;">Libs v1</div>
+            </div>
+            <div style="width:1px; background:rgba(255,255,255,0.2);"></div>
+            <div style="text-align:center; flex:1; padding:8px;">
+              <div style="font-size:1.8em;">&#9881;</div>
+              <div style="font-size:0.75em; font-weight:bold; color:#fff;">App B</div>
+              <div style="font-size:0.6em; color:#90caf9;">Libs v2</div>
+            </div>
+            <div style="width:1px; background:rgba(255,255,255,0.2);"></div>
+            <div style="text-align:center; flex:1; padding:8px;">
+              <div style="font-size:1.8em;">&#9881;</div>
+              <div style="font-size:0.75em; font-weight:bold; color:#fff;">App C</div>
+              <div style="font-size:0.6em; color:#90caf9;">Libs v1</div>
+            </div>
+          </div>
+        </div>
+        <!-- Setas de conflito entre apps -->
+        <div class="fragment fade-in" data-fragment-index="4" style="position:absolute; left:33%; top:55%; font-size:1.3em; color:#f44336; z-index:10;">&#8644;</div>
+        <div class="fragment fade-in" data-fragment-index="4" style="position:absolute; left:63%; top:55%; font-size:1.3em; color:#f44336; z-index:10;">&#8644;</div>
+      </div>
+
+      <!-- Host Operating System -->
+      <div class="fragment fade-up" data-fragment-index="2">
+        <div style="background:linear-gradient(135deg,#2e7d32,#43a047); padding:14px 20px; margin-bottom:2px; border:2px solid #66bb6a; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.8em;">&#128421;</span>
+          <div>
+            <div style="font-size:0.95em; font-weight:bold; color:#fff;">Host Operating System</div>
+            <div style="font-size:0.7em; color:#c8e6c9;">Bibliotecas compartilhadas</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure -->
+      <div class="fragment fade-up" data-fragment-index="1">
+        <div style="background:linear-gradient(135deg,#555,#777); border-radius:0 0 10px 10px; padding:14px 20px; border:2px solid #999; display:flex; align-items:center; gap:12px; justify-content:center;">
+          <span style="font-size:1.8em;">&#127981;</span>
+          <div>
+            <div style="font-size:0.95em; font-weight:bold; color:#fff;">Infrastructure</div>
+            <div style="font-size:0.7em; color:#ccc;">CPU, RAM, Disco, Rede</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Anotação lateral -->
+      <div class="fragment fade-in" data-fragment-index="4" style="position:absolute; right:-230px; top:10px; width:210px; text-align:left;">
+        <div style="font-size:0.7em; color:#f44336; border-left:3px solid #f44336; padding-left:10px;">
+          &#9888; Sem isolamento!<br>
+          App A pode consumir<br>recursos da App B.<br>
+          <strong>Conflito de libs</strong> e<br><strong>perda de performance</strong>.
+        </div>
+      </div>
+      <div class="fragment fade-in" data-fragment-index="5" style="position:absolute; left:-230px; top:10px; width:210px; text-align:right;">
+        <div style="font-size:0.7em; color:#4caf50; border-right:3px solid #4caf50; padding-right:10px;">
+          &#10003; Melhor aproveitamento<br>do hardware.<br>
+          Menos servidores ociosos.
+        </div>
+      </div>
+
+    </div>
     <aside class="notes">
       Como começou a otimizar? Colocar mais de uma aplicação no mesmo servidor.
       Qual o problema disso? Uma aplicação tinha acesso às mesmas coisas que as outras.
