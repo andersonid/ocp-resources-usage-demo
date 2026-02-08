@@ -28,13 +28,20 @@ function detectClusterDomain() {
     const apiHost = process.env.KUBERNETES_SERVICE_HOST || 'kubernetes.default.svc';
     const apiPort = process.env.KUBERNETES_SERVICE_PORT || '443';
 
+    let ca;
+    try {
+      ca = fs.readFileSync('/var/run/secrets/kubernetes.io/serviceaccount/ca.crt');
+    } catch {
+      ca = undefined;
+    }
+
     const options = {
       hostname: apiHost,
       port: apiPort,
       path: '/apis/config.openshift.io/v1/ingresses/cluster',
       method: 'GET',
       headers: { 'Authorization': `Bearer ${token}` },
-      rejectUnauthorized: false,
+      ca: ca,
       timeout: 5000
     };
 
