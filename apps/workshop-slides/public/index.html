@@ -894,8 +894,9 @@ Reveal.initialize({
 // Disable demo buttons if cluster domain is not set
 document.addEventListener('DOMContentLoaded', function() {
   var links = document.querySelectorAll('.demo-btn');
+  var marker = '__CLUSTER' + '_DOMAIN__';
   links.forEach(function(link) {
-    if (link.href && link.href.indexOf('__CLUSTER_DOMAIN__') !== -1) {
+    if (link.href && link.href.indexOf(marker) !== -1) {
       link.classList.add('disabled');
       link.removeAttribute('href');
       link.title = 'Domínio do cluster não detectado';
