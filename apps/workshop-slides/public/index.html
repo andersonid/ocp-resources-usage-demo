@@ -2110,6 +2110,15 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       }
     }
 
+    // ----- Hide global logo on cover slide (already has large logo) -----
+    var globalLogo = document.querySelector('.global-logo');
+    function toggleLogo() {
+      var idx = Reveal.getIndices();
+      globalLogo.style.display = (idx.h === 0 && idx.v === 0) ? 'none' : 'block';
+    }
+    toggleLogo();
+    Reveal.on('slidechanged', toggleLogo);
+
     // ----- Disable demo buttons if cluster domain not set -----
     var links = document.querySelectorAll('.demo-btn');
     var marker = '__CLUSTER' + '_DOMAIN__';
