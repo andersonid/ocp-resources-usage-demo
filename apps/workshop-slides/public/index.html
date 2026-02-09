@@ -812,33 +812,39 @@
     <h3 style="margin-bottom:8px; color:#999;">Overcommit -- Por que isso funciona</h3>
     <div style="display:flex; align-items:flex-end; justify-content:center; gap:40px;">
 
-      <!-- Gráfico do nó (box 90x160, overflow ~60px acima) -->
-      <div style="position:relative; padding-top:75px;">
+      <!-- Gráfico do nó (box 90x160 = 1000m, overflow 96px acima) -->
+      <div style="position:relative; padding-top:110px;">
         <div style="display:flex; align-items:stretch; gap:8px;">
           <!-- Label capacidade à esquerda, vertical -->
           <div style="display:flex; align-items:center;">
-            <div style="font-size:0.5em; color:#999; white-space:nowrap; writing-mode:vertical-lr; transform:rotate(180deg); letter-spacing:1px;">Capacidade do Nó: 400m</div>
+            <div style="font-size:0.5em; color:#999; white-space:nowrap; writing-mode:vertical-lr; transform:rotate(180deg); letter-spacing:1px;">Capacidade do Nó: 1000m (1 vCPU)</div>
           </div>
           <!-- Box do nó -->
           <div style="width:90px; height:160px; border:2px solid #666; border-radius:4px; position:relative; background:rgba(255,255,255,0.03);">
-            <!-- REQUESTS (sólidos) -->
-            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:0; left:0; right:0; height:40px; background:linear-gradient(0deg,#1565c0,#1e88e5); opacity:0.85; border-radius:0 0 2px 2px;"></div>
-            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:40px; left:0; right:0; height:32px; background:linear-gradient(0deg,#2e7d32,#43a047); opacity:0.85;"></div>
-            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:72px; left:0; right:0; height:20px; background:linear-gradient(0deg,#e65100,#f57c00); opacity:0.85;"></div>
-            <!-- Linha de requests (92px) -->
-            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:92px; left:-5px; right:-5px; border-top:2px dashed #fff; z-index:10;"></div>
-            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:95px; left:-100px; font-size:0.45em; color:#fff; white-space:nowrap; font-weight:bold;">Requests: 230m &#8594;</div>
+            <!-- REQUESTS (sólidos) - escala: 160px = 1000m -->
+            <!-- App A req: 300m = 48px -->
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:0; left:0; right:0; height:48px; background:linear-gradient(0deg,#1565c0,#1e88e5); opacity:0.85; border-radius:0 0 2px 2px;"></div>
+            <!-- App B req: 250m = 40px -->
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:48px; left:0; right:0; height:40px; background:linear-gradient(0deg,#2e7d32,#43a047); opacity:0.85;"></div>
+            <!-- App C req: 200m = 32px -->
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:88px; left:0; right:0; height:32px; background:linear-gradient(0deg,#e65100,#f57c00); opacity:0.85;"></div>
+            <!-- Linha de requests (750m = 120px) -->
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:120px; left:-5px; right:-5px; border-top:2px dashed #fff; z-index:10;"></div>
+            <div class="fragment fade-in" data-fragment-index="1" style="position:absolute; bottom:123px; left:-105px; font-size:0.45em; color:#fff; white-space:nowrap; font-weight:bold;">Requests: 750m &#8594;</div>
 
             <!-- LIMITS (hachurados, TRANSBORDAM) -->
-            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:0; left:3px; right:3px; height:80px; background:repeating-linear-gradient(45deg, rgba(66,165,245,0.25), rgba(66,165,245,0.25) 3px, transparent 3px, transparent 6px); border:1px dashed rgba(66,165,245,0.4);"></div>
-            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:80px; left:3px; right:3px; height:72px; background:repeating-linear-gradient(45deg, rgba(76,175,80,0.25), rgba(76,175,80,0.25) 3px, transparent 3px, transparent 6px); border:1px dashed rgba(76,175,80,0.4);"></div>
-            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:152px; left:3px; right:3px; height:80px; background:repeating-linear-gradient(45deg, rgba(255,152,0,0.25), rgba(255,152,0,0.25) 3px, transparent 3px, transparent 6px); border:1px dashed rgba(255,152,0,0.4);"></div>
-            <!-- Linha de limits (232px = 72px acima do box de 160px) -->
-            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:232px; left:-5px; right:-5px; border-top:2px solid #f44336; z-index:10;"></div>
-            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:235px; left:-100px; font-size:0.45em; color:#f44336; white-space:nowrap; font-weight:bold;">Limits: 580m &#8594;</div>
-            <!-- Zona de overcommit -->
-            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:160px; left:-2px; right:-2px; height:72px; border:2px dashed #f44336; border-top:none; background:rgba(244,67,54,0.06);"></div>
-            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:185px; left:-100px; font-size:0.45em; color:#f44336; white-space:nowrap; text-align:right; line-height:1.3;">Overcommit &#8594;<br><span style="font-size:0.85em; color:#ff8a80;">180m acima</span></div>
+            <!-- App A lim: 600m = 96px -->
+            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:0; left:3px; right:3px; height:96px; background:repeating-linear-gradient(45deg, rgba(66,165,245,0.25), rgba(66,165,245,0.25) 3px, transparent 3px, transparent 6px); border:1px dashed rgba(66,165,245,0.4);"></div>
+            <!-- App B lim: 500m = 80px -->
+            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:96px; left:3px; right:3px; height:80px; background:repeating-linear-gradient(45deg, rgba(76,175,80,0.25), rgba(76,175,80,0.25) 3px, transparent 3px, transparent 6px); border:1px dashed rgba(76,175,80,0.4);"></div>
+            <!-- App C lim: 500m = 80px (começa em 176px, transborda o box de 160px) -->
+            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:176px; left:3px; right:3px; height:80px; background:repeating-linear-gradient(45deg, rgba(255,152,0,0.25), rgba(255,152,0,0.25) 3px, transparent 3px, transparent 6px); border:1px dashed rgba(255,152,0,0.4);"></div>
+            <!-- Linha de limits (1600m = 256px = 96px acima do box) -->
+            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:256px; left:-5px; right:-5px; border-top:2px solid #f44336; z-index:10;"></div>
+            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:259px; left:-110px; font-size:0.45em; color:#f44336; white-space:nowrap; font-weight:bold;">Limits: 1600m &#8594;</div>
+            <!-- Zona de overcommit (96px acima do box) -->
+            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:160px; left:-2px; right:-2px; height:96px; border:2px dashed #f44336; border-top:none; background:rgba(244,67,54,0.06);"></div>
+            <div class="fragment fade-in" data-fragment-index="2" style="position:absolute; bottom:196px; left:-110px; font-size:0.45em; color:#f44336; white-space:nowrap; text-align:right; line-height:1.3;">Overcommit &#8594;<br><span style="font-size:0.85em; color:#ff8a80;">600m acima</span></div>
           </div>
         </div>
       </div>
@@ -846,9 +852,9 @@
       <!-- Legenda (alinhada ao fundo do box) -->
       <div style="text-align:left; font-size:0.65em; padding-bottom:5px;">
         <div class="fragment fade-in" data-fragment-index="1">
-          <div style="margin-bottom:8px;"><span style="display:inline-block; width:12px; height:12px; background:#1e88e5; border-radius:2px; vertical-align:middle; margin-right:6px;"></span> <strong>App A</strong> -- req: 100m, lim: 200m</div>
-          <div style="margin-bottom:8px;"><span style="display:inline-block; width:12px; height:12px; background:#43a047; border-radius:2px; vertical-align:middle; margin-right:6px;"></span> <strong>App B</strong> -- req: 80m, lim: 180m</div>
-          <div style="margin-bottom:8px;"><span style="display:inline-block; width:12px; height:12px; background:#f57c00; border-radius:2px; vertical-align:middle; margin-right:6px;"></span> <strong>App C</strong> -- req: 50m, lim: 200m</div>
+          <div style="margin-bottom:8px;"><span style="display:inline-block; width:12px; height:12px; background:#1e88e5; border-radius:2px; vertical-align:middle; margin-right:6px;"></span> <strong>App A</strong> -- req: 300m, lim: 600m</div>
+          <div style="margin-bottom:8px;"><span style="display:inline-block; width:12px; height:12px; background:#43a047; border-radius:2px; vertical-align:middle; margin-right:6px;"></span> <strong>App B</strong> -- req: 250m, lim: 500m</div>
+          <div style="margin-bottom:8px;"><span style="display:inline-block; width:12px; height:12px; background:#f57c00; border-radius:2px; vertical-align:middle; margin-right:6px;"></span> <strong>App C</strong> -- req: 200m, lim: 500m</div>
           <div style="margin-top:6px; font-size:0.85em; color:#999;">
             <span style="display:inline-block; width:12px; height:12px; background:repeating-linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.3) 3px, transparent 3px, transparent 6px); border:1px dashed #999; border-radius:2px; vertical-align:middle; margin-right:6px;"></span> Hachurado = zona de burst
           </div>
@@ -867,7 +873,8 @@
       </div>
     </div>
     <aside class="notes">
-      Overcommit: a soma dos limits ultrapassa a capacidade real do nó. Parece perigoso, mas funciona porque
+      Overcommit: neste exemplo o nó tem 1 vCPU (1000m). Os requests somam 750m -- cabem.
+      Mas os limits somam 1600m -- 600m acima da capacidade real. Parece perigoso, mas funciona porque
       nem todas as apps usam o máximo ao mesmo tempo. Picos são distribuídos no tempo.
       Overcommit de CPU é aceitável -- throttling. Overcommit de memória é perigoso -- OOMKill.
       Agora vamos ver como o OpenShift aplica esses conceitos em dois momentos distintos.
