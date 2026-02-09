@@ -105,22 +105,22 @@ app.get('/api/cluster-domain', (req, res) => {
 // ------------------------------------------------------------------
 // Socket.io Multiplex -- presenter controls all clients in real time
 // ------------------------------------------------------------------
-let currentState = null;
+let currentState = { indexh: 0, indexv: 0, indexf: -1 };
 
 io.on('connection', (socket) => {
   const role = socket.handshake.query.role;
   console.log(`Socket connected: ${role} (${socket.id})`);
 
-  // Send current state to newly connected followers only if presenter has navigated
-  if (role === 'client' && currentState) {
+  // Send current state to newly connected clients so they sync immediately
+  if (role === 'client') {
     socket.emit('slidechanged', currentState);
   }
 
   // Presenter broadcasts slide changes
   socket.on('slidechanged', (data) => {
     if (role === 'presenter') {
-      currentState = { indexh: data.indexh, indexv: data.indexv, indexf: data.indexf || 0 };
-      socket.broadcast.emit('slidechanged', currentState);
+      currentState = data;
+      socket.broadcast.emit('slidechanged', data);
     }
   });
 

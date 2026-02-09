@@ -2052,6 +2052,8 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
   var params = new URLSearchParams(window.location.search);
   var isPresenter = params.has('presenter');
   var isFollower  = params.has('follow');
+  // Speaker Notes window (opened by pressing S) is a popup -- do NOT connect socket from it
+  var isSpeakerNotesPopup = !!window.opener;
 
   Reveal.initialize({
     hash: true,
@@ -2072,23 +2074,17 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
     // ?presenter  = controla os slides e envia estado
     // ?follow     = segue o presenter (teclado/touch desabilitados)
     // (sem param) = navegacao normal independente
-    if (isPresenter || isFollower) {
+    if ((isPresenter || isFollower) && !isSpeakerNotesPopup) {
       var role = isPresenter ? 'presenter' : 'client';
       var socket = io({ query: { role: role } });
 
       if (isPresenter) {
-        // Skip the initial slidechanged event fired by Reveal on init
-        var initialized = false;
-        Reveal.on('ready', function() {
-          setTimeout(function() { initialized = true; }, 500);
-        });
         function sendState() {
-          if (!initialized) return;
           var indices = Reveal.getIndices();
           socket.emit('slidechanged', {
             indexh: indices.h,
             indexv: indices.v,
-            indexf: indices.f || 0
+            indexf: indices.f === undefined ? -1 : indices.f
           });
         }
         Reveal.on('slidechanged', sendState);
@@ -2098,7 +2094,10 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
         // Follower: disable local navigation, follow presenter
         Reveal.configure({ keyboard: false, touch: false, controls: false });
         socket.on('slidechanged', function(data) {
-          Reveal.slide(data.indexh, data.indexv, data.indexf || 0);
+          Reveal.slide(data.indexh, data.indexv, data.indexf);
+        });
+        socket.on('fragmentchanged', function(data) {
+          Reveal.slide(data.indexh, data.indexv, data.indexf);
         });
       }
     }
