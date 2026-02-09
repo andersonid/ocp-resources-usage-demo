@@ -2052,8 +2052,6 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
   var params = new URLSearchParams(window.location.search);
   var isPresenter = params.has('presenter');
   var isFollower  = params.has('follow');
-  // Speaker Notes window (opened by pressing S) is a popup -- do NOT connect socket from it
-  var isSpeakerNotesPopup = !!window.opener;
 
   Reveal.initialize({
     hash: true,
@@ -2074,18 +2072,19 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
     // ?presenter  = controla os slides e envia estado
     // ?follow     = segue o presenter (teclado/touch desabilitados)
     // (sem param) = navegacao normal independente
-    if ((isPresenter || isFollower) && !isSpeakerNotesPopup) {
+    if (isPresenter || isFollower) {
       var role = isPresenter ? 'presenter' : 'client';
       var socket = io({ query: { role: role } });
 
       if (isPresenter) {
+        var lastSentH = -1, lastSentV = -1, lastSentF = -1;
         function sendState() {
           var indices = Reveal.getIndices();
-          socket.emit('slidechanged', {
-            indexh: indices.h,
-            indexv: indices.v,
-            indexf: indices.f === undefined ? -1 : indices.f
-          });
+          var h = indices.h, v = indices.v, f = indices.f || 0;
+          // Only emit when state actually changes (avoids Speaker Notes spurious events)
+          if (h === lastSentH && v === lastSentV && f === lastSentF) return;
+          lastSentH = h; lastSentV = v; lastSentF = f;
+          socket.emit('slidechanged', { indexh: h, indexv: v, indexf: f });
         }
         Reveal.on('slidechanged', sendState);
         Reveal.on('fragmentshown', sendState);
@@ -2094,10 +2093,12 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
         // Follower: disable local navigation, follow presenter
         Reveal.configure({ keyboard: false, touch: false, controls: false });
         socket.on('slidechanged', function(data) {
-          Reveal.slide(data.indexh, data.indexv, data.indexf);
+          var f = (data.indexf != null && data.indexf >= 0) ? data.indexf : undefined;
+          Reveal.slide(data.indexh, data.indexv, f);
         });
         socket.on('fragmentchanged', function(data) {
-          Reveal.slide(data.indexh, data.indexv, data.indexf);
+          var f = (data.indexf != null && data.indexf >= 0) ? data.indexf : undefined;
+          Reveal.slide(data.indexh, data.indexv, f);
         });
       }
     }
