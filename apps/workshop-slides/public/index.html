@@ -2077,12 +2077,18 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       var socket = io({ query: { role: role } });
 
       if (isPresenter) {
+        // Skip the initial slidechanged event fired by Reveal on init
+        var initialized = false;
+        Reveal.on('ready', function() {
+          setTimeout(function() { initialized = true; }, 500);
+        });
         function sendState() {
+          if (!initialized) return;
           var indices = Reveal.getIndices();
           socket.emit('slidechanged', {
             indexh: indices.h,
             indexv: indices.v,
-            indexf: indices.f === undefined ? -1 : indices.f
+            indexf: indices.f || 0
           });
         }
         Reveal.on('slidechanged', sendState);
@@ -2092,10 +2098,7 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
         // Follower: disable local navigation, follow presenter
         Reveal.configure({ keyboard: false, touch: false, controls: false });
         socket.on('slidechanged', function(data) {
-          Reveal.slide(data.indexh, data.indexv, data.indexf);
-        });
-        socket.on('fragmentchanged', function(data) {
-          Reveal.slide(data.indexh, data.indexv, data.indexf);
+          Reveal.slide(data.indexh, data.indexv, data.indexf || 0);
         });
       }
     }
