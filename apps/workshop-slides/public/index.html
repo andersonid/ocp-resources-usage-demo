@@ -2052,6 +2052,10 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
   var params = new URLSearchParams(window.location.search);
   var isPresenter = params.has('presenter');
   var isFollower  = params.has('follow');
+  // Speaker Notes plugin creates iframes that load the same URL.
+  // One of them shows the NEXT slide, which would send wrong state via socket.
+  // Only the top-level window should connect to Socket.io.
+  var isEmbedded = (window.self !== window.top) || !!window.opener;
 
   Reveal.initialize({
     hash: true,
@@ -2072,7 +2076,7 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
     // ?presenter  = controla os slides e envia estado
     // ?follow     = segue o presenter (teclado/touch desabilitados)
     // (sem param) = navegacao normal independente
-    if (isPresenter || isFollower) {
+    if ((isPresenter || isFollower) && !isEmbedded) {
       var role = isPresenter ? 'presenter' : 'client';
       var socket = io({ query: { role: role } });
 
