@@ -13,6 +13,7 @@ This project contains three demo applications and a monitoring dashboard to visu
 | **stress-app** | Node.js app that generates CPU and memory load on demand. Deployed in two namespaces with different resource configurations. |
 | **resource-dashboard** | Real-time dashboard consuming Kubernetes Metrics API. Displays resource usage, HPA status, and anti-pattern detection side by side. |
 | **workload-simulator** | Simulates realistic workload patterns (peak/off-peak cycles) for VPA recommendation collection. |
+| **workshop-slides** | Interactive slide deck (reveal.js) with presenter/follower sync and speaker notes support. |
 
 ### Namespaces
 
@@ -44,6 +45,23 @@ GitHub Repository
                                                (Deployments, Services,
                                                 Routes, HPA, VPA, RBAC)
 ```
+
+## Workshop Slides (Presenter / Follower mode)
+
+The `workshop-slides` application includes a real-time synchronization feature using Socket.io. This allows a presenter (e.g., on a tablet) to control the slide navigation for all connected followers (e.g., projected on a screen).
+
+| URL | Description |
+|-----|-------------|
+| `/` | Normal independent navigation (default) |
+| `/?presenter` | Presenter mode -- controls slides for all followers. Press **S** to open Speaker Notes. |
+| `/?follow` | Follower mode -- keyboard, touch, and controls are disabled. Slides sync automatically with the presenter. |
+
+Usage:
+
+1. Open `/?presenter` on the device you will use to control the presentation (e.g., tablet).
+2. Open `/?follow` on the device connected to the projector or shared screen.
+3. Navigate slides on the presenter device; the follower will mirror the navigation in real time.
+4. Press **S** on the presenter window to open Speaker Notes (does not affect follower sync).
 
 ## Key Concepts Demonstrated
 
@@ -166,7 +184,8 @@ The pipeline uses CEL interceptors to detect which app was modified and triggers
 ├── apps/
 │   ├── stress-app/              # CPU/memory load generator
 │   ├── resource-dashboard/      # Real-time monitoring dashboard
-│   └── workload-simulator/      # Workload pattern simulator for VPA
+│   ├── workload-simulator/      # Workload pattern simulator for VPA
+│   └── workshop-slides/         # Interactive slide deck with presenter sync
 ├── gitops/
 │   ├── app-bom/                 # Manifests: Deployment, Service, Route, HPA
 │   ├── app-ruim/                # Manifests: Deployment, Service, Route, HPA
