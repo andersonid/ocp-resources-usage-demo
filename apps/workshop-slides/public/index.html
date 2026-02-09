@@ -7,28 +7,34 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800&family=Red+Hat+Text:wght@400;500;600;700&family=Red+Hat+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --r-background-color: #1a1a2e;
     --r-main-color: #e0e0e0;
     --r-heading-color: #ffffff;
     --r-link-color: #ee0000;
+    --r-main-font: 'Red Hat Text', sans-serif;
+    --r-heading-font: 'Red Hat Display', sans-serif;
+    --r-code-font: 'Red Hat Mono', monospace;
     --red: #cc0000;
     --green: #2e7d32;
     --blue: #1565c0;
     --yellow: #f9a825;
     --orange: #e65100;
   }
-  .reveal { font-size: 28px; }
-  .reveal h1 { font-size: 2.2em; color: var(--red); }
-  .reveal h2 { font-size: 1.6em; color: #fff; border-bottom: 2px solid var(--red); padding-bottom: 10px; }
-  .reveal h3 { font-size: 1.2em; color: #ccc; }
+  .reveal { font-size: 28px; font-family: 'Red Hat Text', sans-serif; }
+  .reveal h1 { font-size: 2.2em; color: var(--red); font-family: 'Red Hat Display', sans-serif; font-weight: 700; }
+  .reveal h2 { font-size: 1.6em; color: #fff; border-bottom: 2px solid var(--red); padding-bottom: 10px; font-family: 'Red Hat Display', sans-serif; font-weight: 600; }
+  .reveal h3 { font-size: 1.2em; color: #ccc; font-family: 'Red Hat Display', sans-serif; font-weight: 500; }
   .reveal .slide-number { font-size: 14px; }
   .reveal table { font-size: 0.75em; margin: 0 auto; }
-  .reveal table th { background: var(--red); color: #fff; padding: 8px 14px; }
+  .reveal table th { background: var(--red); color: #fff; padding: 8px 14px; font-family: 'Red Hat Display', sans-serif; font-weight: 600; }
   .reveal table td { padding: 6px 14px; border-bottom: 1px solid #444; }
   .reveal pre { font-size: 0.65em; }
-  .reveal code { font-size: 0.9em; }
+  .reveal code { font-size: 0.9em; font-family: 'Red Hat Mono', monospace; }
   .reveal .slides section { text-align: left; }
   .reveal .slides section.center { text-align: center; }
   .reveal img.slide-img { max-height: 55vh; border: none; box-shadow: none; background: transparent; }
