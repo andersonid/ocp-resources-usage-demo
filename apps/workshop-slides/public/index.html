@@ -89,8 +89,6 @@
   <aside class="notes">
     Bom dia a todos. Esse workshop tem como objetivo mostrar na prática como dimensionar corretamente aplicações no OpenShift,
     evitando desperdício de recursos e garantindo que autoscaling funcione de verdade.
-    Vamos começar com um pouco de contexto histórico para entender de onde viemos.
-    Os botões acima abrem as ferramentas do cluster em nova aba.
   </aside>
 </section>
 
@@ -158,7 +156,7 @@
 
     </div>
     <aside class="notes">
-      Como era antes? Até mesmo antes da virtualização.
+      Como era antes?
       Você tinha na sua infra um servidor com sua CPU e memória, o sistema operacional, e a sua aplicação rodava em cima desse SO e HW.
       Qual era o problema aqui? Se você tivesse uma aplicação que não estivesse usando todo o HW, você tinha um desperdício dos recursos computacionais.
       Então você precisava otimizar o uso desses recursos.
@@ -415,9 +413,9 @@
     <aside class="notes">
       A próxima evolução: cgroups. Isolamento e limites de recursos por aplicação, no mesmo sistema operacional.
       Você usa o SO diretamente no HW físico, isolando suas aplicações, mas ainda compartilhando as bibliotecas.
-      O que são cgroups? Um recurso do kernel Linux que limita, contabiliza e isola o uso de CPU, memória, IO de disco e rede de um conjunto de processos.
-      Os cgroups são um componente-chave dos containers -- e é por isso que conseguimos implementar requests e limits no Kubernetes.
-      Basicamente, cgroups são o mecanismo que permite ao Kubernetes controlar quanto de CPU e memória cada container pode usar.
+      O que é o cgroups? Um recurso do kernel Linux que limita, contabiliza e isola o uso de CPU, memória, IO de disco e rede de um conjunto de processos.
+      O cgroups é um componente-chave dos containers -- e é por isso que conseguimos implementar requests e limits no Kubernetes.
+      Basicamente, cgroups é o mecanismo que permite ao Kubernetes controlar quanto de CPU e memória cada container pode usar.
     </aside>
   </section>
 
