@@ -1655,30 +1655,6 @@
   </section>
 
   <section>
-    <h2>Gerando carga no app-bom</h2>
-    <div class="demo-indicator">DEMO -- Stress App app-bom</div>
-    <div class="demo-links">
-      <a class="demo-btn green" href="https://stress-app-app-bom.__CLUSTER_DOMAIN__" target="_blank">Abrir Stress App (app-bom)</a>
-    </div>
-    <ol style="margin-top:20px;">
-      <li>Abrir Stress App do app-bom</li>
-      <li>Clicar em <strong>"120s - Moderado"</strong></li>
-      <li>Voltar ao Dashboard -- observar CPU subindo</li>
-      <li>HPA detecta carga &gt; 70% e escala</li>
-      <li>Novas réplicas aparecem</li>
-    </ol>
-    <div class="key-message fragment">
-      Isso é autoscaling funcionando de verdade. Requests corretos = HPA funcional.
-    </div>
-    <aside class="notes">
-      Disparar 2 minutos de carga moderada no app-bom. Voltar ao dashboard e observar.
-      A CPU sobe, ultrapassa 70% do request (35m), e o HPA escala.
-      Se perguntarem por que só um pod mostra CPU alta: o teste gera carga internamente no pod.
-      Não é tráfego distribuído. Em produção, o Route distribui entre réplicas.
-    </aside>
-  </section>
-
-  <section>
     <h2>Gerando carga no app-ruim</h2>
     <div class="demo-indicator">DEMO -- Stress App app-ruim</div>
     <div class="demo-links">
@@ -1696,9 +1672,33 @@
       Esse é exatamente o cenário que acontece em clusters reais.
     </div>
     <aside class="notes">
-      Mesma coisa no app-ruim. Mesma carga, mas o request é 2000m.
+      Vamos gerar carga no app-ruim primeiro. O request é 2000m.
       A porcentagem de CPU nunca chega perto de 70% (que seria 1400m!).
-      O HPA está efetivamente morto. É exatamente o que mostramos na animação: HPA depende de requests corretos.
+      O HPA está efetivamente morto. Guardem esse resultado -- agora vamos comparar com o app-bom.
+    </aside>
+  </section>
+
+  <section>
+    <h2>Gerando carga no app-bom</h2>
+    <div class="demo-indicator">DEMO -- Stress App app-bom</div>
+    <div class="demo-links">
+      <a class="demo-btn green" href="https://stress-app-app-bom.__CLUSTER_DOMAIN__" target="_blank">Abrir Stress App (app-bom)</a>
+    </div>
+    <ol style="margin-top:20px;">
+      <li>Abrir Stress App do app-bom</li>
+      <li>Clicar em <strong>"120s - Moderado"</strong></li>
+      <li>Voltar ao Dashboard -- observar CPU subindo</li>
+      <li>HPA detecta carga &gt; 70% e escala</li>
+      <li>Novas réplicas aparecem</li>
+    </ol>
+    <div class="key-message fragment">
+      Isso é autoscaling funcionando de verdade. Requests corretos = HPA funcional.
+    </div>
+    <aside class="notes">
+      Agora a mesma carga no app-bom. A CPU sobe, ultrapassa 70% do request (35m), e o HPA escala.
+      A diferença é gritante: mesma aplicação, mesma carga, mesmo HPA -- só mudaram os requests.
+      Se perguntarem por que só um pod mostra CPU alta: o teste gera carga internamente no pod.
+      Não é tráfego distribuído. Em produção, o Route distribui entre réplicas.
     </aside>
   </section>
 
