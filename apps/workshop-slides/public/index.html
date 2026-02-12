@@ -1864,6 +1864,51 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
   </section>
 </section>
 
+  <section>
+    <h2>LimitRange -- Proteção por namespace</h2>
+    <div class="two-col">
+      <div>
+        <h3 style="color:#4caf50;">O que faz</h3>
+        <ul>
+          <li><strong>Default:</strong> aplica limits automaticamente se o dev não definir</li>
+          <li><strong>DefaultRequest:</strong> aplica requests automaticamente</li>
+          <li><strong>Max / Min:</strong> impede valores extremos (ex: request de 8 vCPUs)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="color:#42a5f5;">Exemplo</h3>
+        <pre style="font-size:0.55em; text-align:left;"><code>apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-limits
+spec:
+  limits:
+  - default:
+      cpu: 200m
+      memory: 256Mi
+    defaultRequest:
+      cpu: 50m
+      memory: 128Mi
+    max:
+      cpu: 2
+      memory: 2Gi
+    type: Container</code></pre>
+      </div>
+    </div>
+    <div class="key-message fragment">
+      LimitRange é a rede de segurança do namespace. Mesmo que o desenvolvedor esqueça de definir recursos, o cluster aplica valores sensatos.
+    </div>
+    <aside class="notes">
+      O LimitRange resolve um problema prático: nem todo desenvolvedor vai lembrar de configurar requests e limits.
+      Com o LimitRange, o namespace tem valores padrão automáticos e tetos máximos.
+      Se alguém tentar criar um pod com request de 8 vCPUs, o LimitRange rejeita.
+      Se alguém criar um pod sem definir recursos, o LimitRange aplica os defaults.
+      Qualquer project admin consegue criar -- não precisa de cluster-admin.
+      Em ambientes corporativos, o time de plataforma pode distribuir LimitRanges via ACM Policies, como veremos a seguir.
+    </aside>
+  </section>
+</section>
+
 <!-- ============================================================ -->
 <!-- PART 6 - ROUTE VS SERVICE -->
 <!-- ============================================================ -->
@@ -1982,18 +2027,22 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       <a class="demo-btn dark" href="https://openshift-gitops-server-openshift-gitops.__CLUSTER_DOMAIN__" target="_blank">Abrir Argo CD</a>
     </div>
     <ol style="margin-top:20px;">
-      <li>Corrigir labels no Git (<code>gitops/app-bom/deployment.yaml</code>)</li>
+      <li>Corrigir os resources do app-ruim no Git (<code>gitops/app-ruim/deployment.yaml</code>)</li>
+      <li>Mudar requests/limits de <strong>2000m/2000m</strong> para <strong>50m/200m</strong></li>
       <li>Commit e push</li>
       <li>Argo CD sincroniza automaticamente</li>
-      <li>ACM: app-bom fica <span class="badge-green">Compliant</span></li>
+      <li>ACM: app-ruim fica <span class="badge-green">Compliant</span></li>
     </ol>
     <div class="key-message fragment">
       A correção veio pelo Git. Ninguém fez "oc edit".
       O Git é a fonte de verdade e a policy validou automaticamente.
     </div>
     <aside class="notes">
-      Demonstrar: editar o deployment no Git, adicionar labels, commit e push.
-      Mostrar no ArgoCD o sync. Voltar ao ACM e mostrar que app-bom ficou Compliant.
+      Essa é a demo que fecha o ciclo do workshop inteiro. Vamos corrigir o app-ruim da forma correta: pelo Git.
+      Abrir o deployment.yaml do app-ruim no repositório, mudar os resources de 2000m/2000m para 50m/200m.
+      Commit e push. O ArgoCD detecta a mudança e sincroniza. O pod é recriado com os novos valores.
+      Voltar ao ACM e mostrar que as policies de resource-ceiling e no-guaranteed-stateless ficam Compliant.
+      O ponto narrativo é forte: tudo o que ensinamos -- requests corretos, QoS Burstable, HPA funcional -- foi aplicado com um commit. Sem acessar o cluster diretamente.
     </aside>
   </section>
 
