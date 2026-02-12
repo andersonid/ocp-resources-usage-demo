@@ -1975,7 +1975,7 @@ spec:
     </div>
     <aside class="notes">
       Sabemos como configurar corretamente. Mas como garantir que ninguém desfaça o trabalho?
-      A resposta está em três camadas de proteção: CI com Tekton, CD com ArgoCD, e governança com ACM Policies.
+      A resposta está em três camadas de proteção: CI com OpenShift Pipelines, CD com OpenShift GitOps, e governança com ACM Policies.
     </aside>
   </section>
 
@@ -1984,8 +1984,8 @@ spec:
     <table>
       <thead><tr><th>Camada</th><th>Ferramenta</th><th>Responsabilidade</th></tr></thead>
       <tbody>
-        <tr><td><span class="badge-blue">CI</span></td><td>Tekton Pipelines</td><td>Padroniza o build</td></tr>
-        <tr><td><span class="badge-green">CD</span></td><td>Argo CD (GitOps)</td><td>Git é a fonte de verdade</td></tr>
+        <tr><td><span class="badge-blue">CI</span></td><td>OpenShift Pipelines (Tekton)</td><td>Padroniza o build</td></tr>
+        <tr><td><span class="badge-green">CD</span></td><td>OpenShift GitOps (Argo CD)</td><td>Git é a fonte de verdade</td></tr>
         <tr><td><span class="badge-yellow">Governança</span></td><td>ACM Policies</td><td>Audita e reporta violações</td></tr>
       </tbody>
     </table>
@@ -1995,7 +1995,7 @@ spec:
     </div>
     <aside class="notes">
       Cada camada tem uma responsabilidade. Juntas, formam uma defesa em profundidade.
-      Dev entrega código, pipeline cria imagem, ArgoCD deploya do Git, ACM audita.
+      Dev entrega código, pipeline cria imagem, OpenShift GitOps deploya do Git, ACM audita.
     </aside>
   </section>
 
@@ -2022,7 +2022,7 @@ spec:
 
   <section>
     <h2>Correção via GitOps</h2>
-    <div class="demo-indicator">DEMO -- Git commit + Argo CD sync</div>
+    <div class="demo-indicator">DEMO -- Git commit + OpenShift GitOps sync</div>
     <div class="demo-links">
       <a class="demo-btn dark" href="https://openshift-gitops-server-openshift-gitops.__CLUSTER_DOMAIN__" target="_blank">Abrir Argo CD</a>
     </div>
@@ -2030,7 +2030,7 @@ spec:
       <li>Corrigir os resources do app-ruim no Git (<code>gitops/app-ruim/deployment.yaml</code>)</li>
       <li>Mudar requests/limits de <strong>2000m/2000m</strong> para <strong>50m/200m</strong></li>
       <li>Commit e push</li>
-      <li>Argo CD sincroniza automaticamente</li>
+      <li>OpenShift GitOps sincroniza automaticamente</li>
       <li>ACM: app-ruim fica <span class="badge-green">Compliant</span></li>
     </ol>
     <div class="key-message fragment">
@@ -2040,32 +2040,32 @@ spec:
     <aside class="notes">
       Essa é a demo que fecha o ciclo do workshop inteiro. Vamos corrigir o app-ruim da forma correta: pelo Git.
       Abrir o deployment.yaml do app-ruim no repositório, mudar os resources de 2000m/2000m para 50m/200m.
-      Commit e push. O ArgoCD detecta a mudança e sincroniza. O pod é recriado com os novos valores.
+      Commit e push. O OpenShift GitOps detecta a mudança e sincroniza. O pod é recriado com os novos valores.
       Voltar ao ACM e mostrar que as policies de resource-ceiling e no-guaranteed-stateless ficam Compliant.
       O ponto narrativo é forte: tudo o que ensinamos -- requests corretos, QoS Burstable, HPA funcional -- foi aplicado com um commit. Sem acessar o cluster diretamente.
     </aside>
   </section>
 
   <section>
-    <h2>Argo CD selfHeal</h2>
+    <h2>OpenShift GitOps -- selfHeal</h2>
     <div class="demo-indicator">DEMO -- Delete + auto-recovery</div>
     <div class="demo-links">
       <a class="demo-btn dark"   href="https://openshift-gitops-server-openshift-gitops.__CLUSTER_DOMAIN__" target="_blank">Argo CD</a>
       <a class="demo-btn orange" href="https://console-openshift-console.__CLUSTER_DOMAIN__/terminal" target="_blank">Web Terminal</a>
     </div>
     <ol style="margin-top:20px;">
-      <li>Mostrar que app-bom está Synced e Healthy no ArgoCD</li>
+      <li>Mostrar que app-bom está Synced e Healthy no Argo CD</li>
       <li>Simular acidente: <code>oc delete route stress-app -n app-bom</code></li>
-      <li>ArgoCD detecta drift e <strong>recria automaticamente</strong></li>
+      <li>OpenShift GitOps detecta drift e <strong>recria automaticamente</strong></li>
       <li>Status volta para Synced + Healthy</li>
     </ol>
     <div class="key-message fragment">
-      Mesmo que alguém com cluster-admin apague recursos, o ArgoCD restaura baseado no Git.
+      Mesmo que alguém com cluster-admin apague recursos, o OpenShift GitOps restaura baseado no Git.
       Se um script destrutivo fosse executado num cluster com GitOps, os recursos voltariam automaticamente.
     </div>
     <aside class="notes">
       Essa demo conecta com o incidente real do cliente -- script com oc delete que quebrou o cluster.
-      Deletar um recurso, aguardar 10-30 segundos, mostrar o ArgoCD restaurando.
+      Deletar um recurso, aguardar 10-30 segundos, mostrar o OpenShift GitOps restaurando.
       Narrativa: com GitOps, isso não teria causado downtime permanente.
     </aside>
   </section>
