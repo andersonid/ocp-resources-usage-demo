@@ -629,9 +629,8 @@
   <section class="center">
     <h2>Um Problema Comum</h2>
     <aside class="notes">
-      Agora vamos ver na prática o que acontece quando as configurações de recursos estão erradas.
-      Temos duas versões da mesma aplicação rodando no cluster: app-ruim e app-bom. Mesma imagem, mesma aplicação.
-      A única diferença? A configuração de recursos. Vamos abrir e comparar.
+      Agora que entendemos a evolução dos recursos computacionais, vamos falar de um problema que vemos com frequência em clusters de produção.
+      Não é culpa de ninguém -- é um padrão comum que se repete quando não há orientação clara sobre como configurar recursos no Kubernetes.
     </aside>
   </section>
 
@@ -670,7 +669,7 @@
       faz sentido para quem desenvolve, mas tem um custo real na plataforma.
     </div>
     <aside class="notes">
-      É exatamente isso que vamos resolver hoje. Vou mostrar na prática o que acontece, como identificar, e como corrigir.
+      É exatamente isso que vamos resolver hoje. Vamos entender por que isso acontece, como identificar, e como corrigir.
     </aside>
   </section>
 </section>
@@ -682,8 +681,8 @@
   <section class="center">
     <h2>Fundamentos Técnicos</h2>
     <aside class="notes">
-      Agora que viram o problema real -- desperdício, HPA travado, overcommit escondido --
-      vamos entender por que isso acontece. Quais são os mecanismos por trás de tudo isso.
+      Agora que entendemos o problema -- desperdício, HPA travado, overcommit escondido --
+      vamos entender por que isso acontece. Quais são os mecanismos do Kubernetes por trás de tudo isso.
     </aside>
   </section>
 
@@ -793,9 +792,9 @@
       </div>
     </div>
     <aside class="notes">
-      O limit é o teto real, imposto pelo cgroup no kernel do Linux. Lembram dos cgroups que vimos na evolução?
-      É aqui que eles entram. O app-ruim tem request igual ao limit -- não tem zona de burst. Tudo trancado.
-      O app-bom tem request de 50m e limit de 200m -- uma zona de burst de 150m para absorver picos.
+      O limit é o teto real, imposto pelo cgroup no kernel do Linux. Lembram do cgroups que vimos na evolução?
+      É aqui que ele entra. Se o request é igual ao limit, não há zona de burst -- tudo trancado.
+      Se o request é menor que o limit, existe uma zona de burst para absorver picos.
       CPU é compressível: ultrapassou, leva throttling. Memória é incompressível: ultrapassou, OOMKill.
       Essa diferença é fundamental para entender as decisões de configuração.
     </aside>
@@ -922,7 +921,7 @@
     <aside class="notes">
       CPU é compressível -- o kernel limita ciclos sem matar. O pod fica lento mas continua vivo.
       Memória é incompressível -- uma vez alocada, o kernel não toma de volta sem matar.
-      Essa diferença é crítica para entender por que o HPA funciona para CPU mas não para memória.
+      Essa diferença é crítica e vai impactar diretamente o comportamento do autoscaling, que veremos a seguir.
     </aside>
   </section>
 
@@ -965,9 +964,9 @@
       </tbody>
     </table>
     <aside class="notes">
-      Esses são exatamente os nossos dois apps de demonstração. app-ruim com 2000m/2000m e app-bom com 50m/200m.
+      Essa tabela resume tudo o que vimos até aqui. Guaranteed com 2000m/2000m versus Burstable com 50m/200m.
       O mesmo teto de segurança pode ser atingido com Burstable -- a diferença é que não tranca recursos no scheduler.
-      Agora vamos olhar esses manifestos de verdade.
+      Agora vamos ver isso na prática: temos dois apps de demonstração no cluster com exatamente essas configurações.
     </aside>
   </section>
 
@@ -1027,7 +1026,7 @@
       Apontar para o CPU atual dos dois: 0% no ruim, 2% no bom.
       Explicar: os dois consomem o mesmo CPU absoluto em idle (~1m). A diferença é o denominador.
       1m / 2000m = 0%. 1m / 50m = 2%. O HPA trabalha com essa porcentagem.
-      Com isso, vocês já entendem o cenário todo. Vamos agora para o autoscaling: como ajustar dinamicamente.
+      Com isso, vocês já entendem o cenário todo. Agora vamos aprofundar no autoscaling -- como o Kubernetes ajusta dinamicamente a capacidade.
     </aside>
   </section>
 
@@ -1855,6 +1854,13 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       <li><strong>Defina LimitRanges</strong> para impedir configurações extremas</li>
       <li><strong>Monitore continuamente</strong> com dashboards nativos</li>
     </ol>
+    <aside class="notes">
+      Essas são as regras que consolidam tudo o que vimos hoje.
+      A primeira é a mais importante: requests devem refletir o uso real observado, não um chute.
+      O VPA em modo Off é a ferramenta que dá esses números com base em dados concretos.
+      LimitRanges evitam que alguém configure 8 vCPUs de request num microsserviço que usa 50m.
+      E monitoramento contínuo garante que a configuração se mantenha adequada ao longo do tempo.
+    </aside>
   </section>
 </section>
 
@@ -2040,6 +2046,11 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       <li><strong>Como monitorar</strong> -- dashboards nativos do OpenShift</li>
       <li><strong>Como proteger</strong> -- GitOps + Policies = automação, não documentação</li>
     </ul>
+    <aside class="notes">
+      Recapitulando a jornada completa. Começamos entendendo por que o problema existe,
+      vimos o impacto concreto no cluster, aprendemos os fundamentos, comprovamos na prática com demos ao vivo,
+      e fechamos com as ferramentas de observabilidade e proteção. Tudo isso usando recursos nativos do OpenShift.
+    </aside>
   </section>
 
   <section>
@@ -2055,6 +2066,12 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       Não é um projeto de meses. É uma mudança de configuração, deployment por deployment,
       com dados concretos guiando cada decisão.
     </div>
+    <aside class="notes">
+      Esses são passos que podem começar amanhã. O VPA em modo Off não altera nada na aplicação --
+      apenas observa e gera recomendações. Em 7 dias vocês terão dados concretos para tomar decisões.
+      A revisão de Routes versus Services é um quick-win: identificar chamadas internas que passam pela Route
+      e trocar por Service reduz latência imediatamente.
+    </aside>
   </section>
 
   <section class="center">
