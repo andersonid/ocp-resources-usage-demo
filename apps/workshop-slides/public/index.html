@@ -732,13 +732,13 @@
         O <strong>request</strong> diz ao Scheduler: "minha aplicação precisa de pelo menos isso para funcionar."<br>
         O Scheduler usa esse valor para decidir <strong>em qual nó</strong> colocar o pod.<br>
         <span style="color:#f44336;">Request alto demais</span> = nó "cheio" no papel, ocioso na prática.<br>
-        <span style="color:#4caf50;">Request baixo demais</span> = muitos pods no mesmo nó, contenção de recursos.
+        <span style="color:#ff9800;">Request baixo demais</span> = muitos pods no mesmo nó, disputando CPU e memória.
       </div>
     </div>
     <aside class="notes">
       O request diz ao Scheduler o mínimo que a aplicação precisa. O Scheduler reserva isso no nó -- mesmo que a aplicação não use.
       Imaginem uma aplicação com request de 2 vCPUs mas que consome apenas 1 millicore em idle. O nó parece cheio no papel, mas na verdade está ocioso. É o cenário clássico de desperdício.
-      Request alto demais: nó cheio no papel, ocioso na prática. Request baixo demais: muitos pods no mesmo nó, todos competindo pelos mesmos recursos.
+      Request alto demais: nó cheio no papel, ocioso na prática. Request baixo demais: muitos pods no mesmo nó, todos disputando os mesmos recursos.
     </aside>
   </section>
 

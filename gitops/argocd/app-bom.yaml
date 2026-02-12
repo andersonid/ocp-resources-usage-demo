@@ -12,9 +12,15 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: app-bom
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=false
+      - RespectIgnoreDifferences=true
