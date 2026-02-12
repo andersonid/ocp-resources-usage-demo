@@ -958,7 +958,7 @@
       <tbody>
         <tr><td>Reserva no scheduler</td><td>2000m (2 vCPUs)</td><td>50m</td></tr>
         <tr><td>Máximo que pode usar</td><td>2000m</td><td>200m</td></tr>
-        <tr><td>Pods num node 8 vCPU</td><td>~4</td><td>~160</td></tr>
+        <tr><td>Pods em um node 8 vCPU</td><td>~4</td><td>~160</td></tr>
         <tr><td>CPU desperdiçada idle</td><td>~1995m trancados</td><td>~45m trancados</td></tr>
         <tr><td>HPA funciona?</td><td>Quase impossível</td><td>Sim</td></tr>
       </tbody>
@@ -1858,7 +1858,7 @@ oc describe node | grep -A 5 "Allocated resources"</code></pre>
       Essas são as regras que consolidam tudo o que vimos hoje.
       A primeira é a mais importante: requests devem refletir o uso real observado, não um chute.
       O VPA em modo Off é a ferramenta que dá esses números com base em dados concretos.
-      LimitRanges evitam que alguém configure 8 vCPUs de request num microsserviço que usa 50m.
+      LimitRanges evitam que alguém configure 8 vCPUs de request em um microsserviço que usa 50m.
       E monitoramento contínuo garante que a configuração se mantenha adequada ao longo do tempo.
     </aside>
   </section>
@@ -2061,7 +2061,7 @@ spec:
     </ol>
     <div class="key-message fragment">
       Mesmo que alguém com cluster-admin apague recursos, o OpenShift GitOps restaura baseado no Git.
-      Se um script destrutivo fosse executado num cluster com GitOps, os recursos voltariam automaticamente.
+      Se um script destrutivo fosse executado em um cluster com GitOps, os recursos voltariam automaticamente.
     </div>
     <aside class="notes">
       Essa demo conecta com o incidente real do cliente -- script com oc delete que quebrou o cluster.
