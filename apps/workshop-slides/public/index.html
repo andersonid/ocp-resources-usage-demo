@@ -493,8 +493,8 @@
       </div>
       <div class="fragment fade-in" data-fragment-index="5" style="position:absolute; left:-240px; top:5px; width:220px; text-align:right;">
         <div style="font-size:0.7em; color:#ff9800; border-right:3px solid #ff9800; padding-right:10px;">
-          &#9888; Bug de kernel afeta<br>o nó inteiro<br>
-          &#9888; Compartilha o kernel<br>do host
+          &#9888; Compartilha o kernel<br>do host<br>
+          &#9888; Bug de kernel afeta<br>o nó inteiro
         </div>
       </div>
 
@@ -737,10 +737,9 @@
       </div>
     </div>
     <aside class="notes">
-      Lembram do app-ruim com request de 2 vCPUs mas usando quase nada? É exatamente esse o problema.
-      O request diz ao Scheduler o mínimo que a app precisa. O Scheduler reserva isso no nó -- mesmo que a app não use.
-      Request alto demais: o nó parece cheio, mas na verdade está ocioso. É o que vimos na Parte 1.
-      Request baixo demais: muitos pods no mesmo nó, todos competindo pelos mesmos recursos.
+      O request diz ao Scheduler o mínimo que a aplicação precisa. O Scheduler reserva isso no nó -- mesmo que a aplicação não use.
+      Imaginem uma aplicação com request de 2 vCPUs mas que consome apenas 1 millicore em idle. O nó parece cheio no papel, mas na verdade está ocioso. É o cenário clássico de desperdício.
+      Request alto demais: nó cheio no papel, ocioso na prática. Request baixo demais: muitos pods no mesmo nó, todos competindo pelos mesmos recursos.
     </aside>
   </section>
 
